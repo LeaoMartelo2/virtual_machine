@@ -1,5 +1,8 @@
+.PHONY: clear clean
+
+
 CC := gcc
-CFLAGS := -Wall -Wextra
+CFLAGS := -Wall -Wextra -std=c11
 
 all: main
 
@@ -13,3 +16,10 @@ build/main.o: src/main.c src/spec.h src/opcodes.h
 
 build/opcodes.o: src/opcodes.c src/spec.h src/opcodes.h
 	${CC} -c src/opcodes.c -o build/opcodes.o ${CFLAGS}
+
+
+clean: clear
+
+
+clear:
+	rm main build/*.o
