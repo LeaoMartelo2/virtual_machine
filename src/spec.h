@@ -24,8 +24,8 @@ typedef enum {
     NO_OP = 0,
     HALT,
     STATE_DUMP,
-    MOV, /* move value to register -> mov 30, %reg                    */
-    LD,  /* load value from register to register -> ld %reg_a, %reg_b */
+    MOV, 
+    LD,  
 
 } Opcodes;
 

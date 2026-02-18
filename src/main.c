@@ -16,8 +16,13 @@ int main(void) {
 
     printf("program loaded: \n"
            "    mov 30, %%5 \n"
+           "    NO_OP\n"
            "    STATE_DUMP\n"
+           "    NO_OP\n"
            "    ld %%5, %%7\n"
+           "    NO_OP\n"
+           "    STATE_DUMP\n"
+           "    HALT\n"
            "\n");
 
     printf("program_counter = %d\n", vm.program_counter);
