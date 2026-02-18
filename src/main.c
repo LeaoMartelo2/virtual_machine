@@ -24,6 +24,8 @@ int main(void) {
                            LD, REG_5, REG_7,
                            NO_OP,
                            INC, REG_5,
+                           STO_PC, REG_0,
+                           JMP, REG_0,
                            STATE_DUMP,
                            HALT};
 
@@ -62,6 +64,14 @@ int main(void) {
 
         case INC: {
             inc(&vm);
+        } break;
+
+        case STO_PC: {
+            sto_pc(&vm);
+        } break;
+
+        case JMP: {
+            jmp(&vm);
         } break;
 
         default: {

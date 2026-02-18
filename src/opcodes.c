@@ -68,3 +68,22 @@ void inc(VM *vm) {
     vm->program_counter++;
     printf("\n");
 }
+
+void sto_pc(VM *vm){
+    printf("STO_PC: {");
+    u32 pc = vm->program_counter;
+    vm->program_counter++;
+    u32 reg_ind = vm->program[vm->program_counter];
+    vm->registers[reg_ind] = pc;
+    printf(" register[%.2d] = %.2d }\n", reg_ind, pc);
+    vm->program_counter++;
+}
+
+void jmp(VM *vm) {
+    printf("JMP: {");
+    vm->program_counter++;
+    u32 reg_ind = vm->program[vm->program_counter];
+    u32 jmp_to = vm->registers[reg_ind];
+    printf(" program_couter -> %.2d }\n", jmp_to);
+    vm->program_counter = jmp_to;
+}

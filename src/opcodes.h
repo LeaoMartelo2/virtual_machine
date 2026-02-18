@@ -9,5 +9,7 @@ void state_dump(VM *vm);
 void mov(VM *vm);
 void ld(VM *vm);
 void inc(VM *vm);
+void sto_pc(VM *vm);
+void jmp(VM *vm);
 
 #endif /* OPCODES_H */

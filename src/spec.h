@@ -30,7 +30,8 @@ typedef enum {
     MOV,
     LD,
     INC,
-    STO_PC
+    STO_PC,
+    JMP,
 
 } Opcodes;
 
