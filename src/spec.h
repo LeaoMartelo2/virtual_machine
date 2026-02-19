@@ -33,11 +33,19 @@ typedef enum : i32 {
     INC,
     DEC,
     STO_PC,
+    CMP,
     JMP,
     JE,
     JNE,
 
 } Opcodes;
+
+typedef enum : i32 {
+    COND_NEGATIVE = -1,
+    COND_ZERO     =  0,
+    COND_POSITIVE =  1, 
+
+} Cond_flags;
 
 typedef struct {
 
@@ -45,6 +53,7 @@ typedef struct {
     i32 program[MAX_PROGRAM_SIZE];
     i32 program_size;
     i32 registers[REG_COUNT];
+    i32 cond_flag;
     bool halted;
     bool verbose;
 

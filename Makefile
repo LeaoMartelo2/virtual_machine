@@ -22,4 +22,4 @@ clean: clear
 
 
 clear:
-	rm main build/*.o
+	rm main build/*.o dumped-program.obj

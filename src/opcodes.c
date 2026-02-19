@@ -24,8 +24,9 @@ void state_dump(VM *vm) {
     }
     printf("##############################\n");
     printf("MACHINE INFO:\n");
-    printf("        program_couter = %d\n", vm->program_counter);
-    printf("        program_size   = %d\n", vm->program_size);
+    printf("        program_couter  = %d\n", vm->program_counter);
+    printf("        program_size    = %d\n", vm->program_size);
+    printf("        condition_flag  = %d\n", vm->cond_flag);
     printf("##############################\n");
     vm->program_counter++;
 }
@@ -105,8 +106,46 @@ void sto_pc(VM *vm) {
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     vm->registers[reg_ind] = pc + 2; /* pos of the next operation after sto_pc argument */
-    printf(" register[%.2d] = %.2d }\n", reg_ind, pc + 2);
+    printf(" register[%d] = %d }\n", reg_ind, pc + 2);
     vm->program_counter++;
+}
+
+void cmp(VM *vm) {
+    printf("CMP: {");
+    vm->program_counter++;
+
+    i32 arg_a_reg_ind = vm->program[vm->program_counter];
+    i32 arg_a_value = vm->registers[arg_a_reg_ind];
+
+    vm->program_counter++;
+
+    i32 arg_b_reg_ind = vm->program[vm->program_counter];
+    i32 arg_b_value = vm->registers[arg_b_reg_ind];
+
+    i32 res = arg_a_value - arg_b_value;
+
+    if (res < 0) {
+        vm->cond_flag = COND_NEGATIVE;
+        printf(" register[%d] < register[%d]; cond: NEGATIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm->program_counter++;
+        return;
+    }
+
+    if (res == 0) {
+        vm->cond_flag = COND_ZERO;
+        printf(" register[%d] == register[%d]; cond: ZERO }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm->program_counter++;
+        return;
+    }
+
+    if (res > 0) {
+        vm->cond_flag = COND_POSITIVE;
+        printf(" register[%d] > register[%d]; cond: POSITIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm->program_counter++;
+        return;
+    }
+
+    // crash();
 }
 
 void jmp(VM *vm) {
@@ -122,38 +161,37 @@ void je(VM *vm) {
     printf("JE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
-    i32 reg_value = vm->registers[reg_ind];
+    i32 jump_to = vm->registers[reg_ind];
 
-    if (reg_value == (i32)0) {
-        vm->program_counter++;
-        i32 reg_jump_ind = vm->program[vm->program_counter];
-        i32 jump_to = vm->registers[reg_jump_ind];
+
+    if(vm->cond_flag == COND_ZERO) {
+        printf(" cond: == 0; JUMPING }\n");
         vm->program_counter = jump_to;
-        printf(" register[%d] == 0; JUMPING program_counter -> %d } \n", reg_ind, vm->program_counter);
         return;
+
     } else {
-        printf(" register[%d] != 0; NOT JUMPING } \n", reg_ind);
+        printf(" cond != 0; NOT JUMPING }\n");
         vm->program_counter++;
-        vm->program_counter++;
+        return;
     }
+
 }
 
 void jne(VM *vm) {
     printf("JNE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
-    i32 cmp_value = vm->registers[reg_ind];
+    i32 jump_to = vm->registers[reg_ind];
 
-    if(cmp_value != (i32)0) {
-        vm->program_counter++;
-        i32 reg_jump_ind = vm->program[vm->program_counter];
-        i32 jump_to = vm->registers[reg_jump_ind];
+    if(vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_POSITIVE) {
+        printf(" cond: != 0; JUMPING }\n");
         vm->program_counter = jump_to;
-        printf(" register[%d] != 0; JUMPING program_counter -> %d } \n", reg_ind, vm->program_counter);
         return;
+
     } else {
-        printf( "register[%d] == 0; NOT JUMPING } \n", reg_ind);
+        printf(" cond: == 0; NOT JUMPING }\n");
         vm->program_counter++;
-        vm->program_counter++;
+        return;
     }
+
 }

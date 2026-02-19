@@ -18,12 +18,13 @@ In the future i will be implementing a way to assemble human readable code in to
 | INC    |  Increments the value of a register by 1 | 1 | inc reg% |
 | DEC    |  Decrements the value of a register by 1 | 1 | dec reg% |
 | STO\_PC | Stores the imediate next OPERATION entry to a register | 1 | sto\_pc reg% |
+| CMP    | Compares the values of 2 registers by subtracting the second from the first, then sets comp flag accordingly | 2 | cmp reg\_a% reg\_b%|
 | JMP | Unconditional jump, sets program counter to value of register | 1 | jmp reg%|
-| JE | Jump if equals, sets program counter to value of register if value = 0 | 2 | je reg\_value% reg\_jumpTo% |
-| JNE | Jump if not equals, sets program counter to value of register if value != 0 | 2 |jne reg\_value% reg\_jumpTo% | 
+| JE | Jump if equals. Jumps program counter to value of register if last CMP instruction yielded 0| 1 | je reg\_jumpTo%|
+| JNE | Jump if not equals. Jumps program counter to value of register if last CMP instruction yielded anything other than 0| 1 |jne reg\_jumpTo%| 
 
 
 
 
 - % = number, usually indicating register index
-- %value = any signed 32 Bit number (uint32\_t)
+- %value = any signed 32 Bit number (int32\_t)

@@ -20,16 +20,26 @@ int main(void) {
 
     
     i32 loded_program[] = {MOV, -5, REG_1,
+                           MOV, 0, REG_4, /* ensure reg4 is 0 for comparasions */
                            NO_OP,
                            LD, REG_1, REG_2,
                            NO_OP,
                            STO_PC, REG_0,
                            INC, REG_3,
-                           JE, REG_3, REG_0, 
+                           CMP, REG_3, REG_4,
+                           JE, REG_3,
+                           NO_OP, 
                            DEC, REG_3,
+                           NO_OP,
                            STO_PC, REG_9,
                            INC, REG_1,
-                           JNE, REG_1, REG_9,
+                           CMP, REG_1, REG_4, /* reg1 < 0 ?*/
+                           JNE, REG_9,
+                           NO_OP,
+                           MOV, -20, REG_6,
+                           MOV, 20, REG_7,
+                           CMP, REG_6, REG_7,
+                           NO_OP,
                            STATE_DUMP,
                            PROGRAM_DUMP,
                            HALT};
@@ -81,6 +91,10 @@ int main(void) {
 
         case STO_PC: {
             sto_pc(&vm);
+        } break;
+
+        case CMP: {
+            cmp(&vm);
         } break;
 
         case JMP: {
