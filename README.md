@@ -26,4 +26,4 @@ In the future i will be implementing a way to assemble human readable code in to
 
 
 - % = number, usually indicating register index
-- %value = any signed 32 Bit number (uint32\_t)
+- %value = any signed 32 Bit number (int32\_t)
