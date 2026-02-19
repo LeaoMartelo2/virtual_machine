@@ -12,6 +12,7 @@ void ld(VM *vm);
 void inc(VM *vm);
 void dec(VM *vm);
 void sto_pc(VM *vm);
+void cmp(VM *vm);
 void jmp(VM *vm);
 void je(VM *vm);
 void jne(VM *vm);
