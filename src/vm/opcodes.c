@@ -32,10 +32,10 @@ void state_dump(VM *vm) {
 }
 
 void program_dump(VM *vm) {
-    printf("PROGRAM_DUMP: ");
+    printf("PROGRAM_DUMP:\n");
 
     const char *filename = "dumped-program.obj";
-    const char *tmp_rawdump = "temp-rawdump.obj";
+    const char *rawdump = "dumped-program-RAW.obj";
 
 
     FILE *file = fopen(filename, "wb");
@@ -44,13 +44,13 @@ void program_dump(VM *vm) {
     }
     fclose(file);
 
-    printf("Dumped current program to %s\n", filename);
+    printf("    Dumped current program to %s\n", filename);
 
-    FILE *file2 = fopen(tmp_rawdump, "wb");
+    FILE *file2 = fopen(rawdump, "wb");
     fwrite(vm->program, sizeof(i32), vm->program_size, file2);
     fclose(file2);
 
-    printf("Dumped raw program data to %s\n", tmp_rawdump);
+    printf("    Dumped raw program data to %s\n", rawdump);
 
     vm->program_counter++;
 }
