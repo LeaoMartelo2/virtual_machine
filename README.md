@@ -22,6 +22,8 @@ In the future i will be implementing a way to assemble human readable code in to
 | JMP | Unconditional jump, sets program counter to value of register | 1 | jmp reg%|
 | JE | Jump if equals. Jumps program counter to value of register if last CMP instruction yielded 0| 1 | je reg\_jumpTo%|
 | JNE | Jump if not equals. Jumps program counter to value of register if last CMP instruction yielded anything other than 0| 1 |jne reg\_jumpTo%| 
+| JGE | Jump if greater or equals. Jumps the program counter to the value of register if the last CMP instruction yielded ZERO or POSITIVE | 1 | jge reg\_jumpTo%|
+| JLE | Jump if less or equals. Jumps the program counter to the value of register if the last CMP instruction yielded NEGATIVE or ZERO| 1 | jle reg\_jumpTo% |
 
 
 
