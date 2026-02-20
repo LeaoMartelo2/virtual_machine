@@ -37,14 +37,14 @@ typedef enum : i32 {
     JMP,
     JE,
     JNE,
-
+    JGE,
+    JLE,
 } Opcodes;
 
 typedef enum : i32 {
     COND_NEGATIVE = -1,
     COND_ZERO     =  0,
     COND_POSITIVE =  1, 
-
 } Cond_flags;
 
 typedef struct {
@@ -56,7 +56,6 @@ typedef struct {
     i32 cond_flag;
     bool halted;
     bool verbose;
-
 } VM;
 
 #endif /* SPEC_H */

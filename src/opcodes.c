@@ -37,14 +37,13 @@ void program_dump(VM *vm) {
     const char *filename = "dumped-program.obj";
 
 
-    FILE *file = fopen(filename, "w");
+    FILE *file = fopen(filename, "wb");
     for(i32 i = 0; i < vm->program_size; ++i) {
-        fprintf(file, "%d ",vm->program[i]);
+        fprintf(file, "%08" PRIx32 " " ,vm->program[i]);
     }
     fclose(file);
 
     printf("Dumped current program to %s\n", filename);
-
 
     vm->program_counter++;
 }
@@ -194,4 +193,40 @@ void jne(VM *vm) {
         return;
     }
 
+}
+
+void jge(VM *vm) {
+    printf("JGE: {");
+    vm->program_counter++;
+    i32 reg_ind = vm->program[vm->program_counter];
+    i32 jump_to = vm->registers[reg_ind];
+
+    if(vm->cond_flag == COND_POSITIVE || vm->cond_flag == COND_ZERO) {
+        printf(" cond >= 0; JUMPING }\n");
+        vm->program_counter = jump_to;
+        return;
+
+    } else {
+        printf( "cond < 0; NOT JUMPING }\n");
+        vm->program_counter++;
+        return;
+    }
+}
+
+void jle(VM *vm) {
+    printf("JLE: {");
+    vm->program_counter++;
+    i32 reg_ind = vm->program[vm->program_counter];
+    i32 jump_to = vm->registers[reg_ind];
+
+    if(vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_ZERO) {
+        printf(" cond <= 0; JUMPING }\n");
+        vm->program_counter = jump_to;
+        return;
+
+    } else {
+        printf(" cond > 0; NOT JUMPING }\n");
+        vm->program_counter++;
+        return;
+    }
 }

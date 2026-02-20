@@ -1,6 +1,5 @@
 .PHONY: clear clean
 
-
 CC := gcc
 CFLAGS := -Wall -Wextra -std=c11 -ggdb
 
