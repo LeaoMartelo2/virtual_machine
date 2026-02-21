@@ -3,7 +3,7 @@
 CC := gcc
 CFLAGS := -Wall -Wextra -static -std=c11 -ggdb
 
-all: vm disassemble
+all: vm disasm
 
 
 # VM
@@ -20,8 +20,8 @@ build/vm/opcodes.o: src/vm/opcodes.c src/spec.h src/vm/opcodes.h
 
 # DISASSEMBLER
 
-disassemble: build/disassemble/main.o 
-	${CC} $^ -o disassemble ${CFLAGS}
+disasm: build/disassemble/main.o 
+	${CC} $^ -o disasm ${CFLAGS}
 
 build/disassemble/main.o: src/disassemble/main.c src/spec.h
 	${CC} -c src/disassemble/main.c -o build/disassemble/main.o ${CFLAGS}
@@ -32,4 +32,4 @@ build/disassemble/main.o: src/disassemble/main.c src/spec.h
 clean: clear
 
 clear:
-	rm -f dumped-program.obj vm disassemble build/vm/*.o build/disassemble/*.o
+	rm -f dumped-program.obj disassembled.asm vm disasm build/vm/*.o build/disassemble/*.o
