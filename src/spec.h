@@ -41,14 +41,38 @@ typedef enum : i32 {
     JLE,
 } Opcodes;
 
+typedef struct {
+    const char *name;
+    int arg_count;
+} Instruction_spec;
+
+// clang-format off
+static const Instruction_spec ASSEMBLY_TABLE[] = {
+    [NO_OP]                                        = {"no_op", 0},
+    [HALT]                                         = {"halt", 0},
+    [STATE_DUMP]                                   = {"state_dump", 0},
+    [MOV]                                          = {"mov", 2},
+    [LD]                                           = {"ld", 2},
+    [INC]                                          = {"inc", 1},
+    [DEC]                                          = {"dec", 1},
+    [STO_PC]                                       = {"sto_pc", 1},
+    [CMP]                                          = {"cmp", 2},
+    [JMP]                                          = {"jmp", 1},
+    [JE]                                           = {"je", 1},
+    [JNE]                                          = {"jne", 1},
+    [JGE]                                          = {"jge", 1},
+    [JLE]                                          = {"jle", 1},
+};
+
+// clang-format on
+
 typedef enum : i32 {
     COND_NEGATIVE = -1,
-    COND_ZERO     =  0,
-    COND_POSITIVE =  1, 
+    COND_ZERO = 0,
+    COND_POSITIVE = 1,
 } Cond_flags;
 
 typedef struct {
-
     i32 program_counter;
     i32 program[MAX_PROGRAM_SIZE];
     i32 program_size;

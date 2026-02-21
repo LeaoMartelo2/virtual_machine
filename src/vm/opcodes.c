@@ -44,13 +44,13 @@ void program_dump(VM *vm) {
     }
     fclose(file);
 
-    printf("    Dumped current program to %s\n", filename);
+    printf("    Dumped current program in a human readable format to %s\n", filename);
 
     FILE *file2 = fopen(rawdump, "wb");
     fwrite(vm->program, sizeof(i32), vm->program_size, file2);
     fclose(file2);
 
-    printf("    Dumped raw program data to %s\n", rawdump);
+    printf("    Dumped raw byte program data to %s\n", rawdump);
 
     vm->program_counter++;
 }

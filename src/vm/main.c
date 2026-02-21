@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../spec.h"
+//#include "../spec.h"
 #include "opcodes.h"
 
-#define ARR_LEN(arr) (sizeof(arr) / sizeof(arr)[0])
+#define ARR_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 int main(void) {
 
@@ -27,7 +27,7 @@ int main(void) {
                            STO_PC, REG_0,
                            INC, REG_3,
                            CMP, REG_3, REG_4,
-                           JE, REG_4,
+                           JE, REG_0,
                            NO_OP, 
                            DEC, REG_3,
                            NO_OP,

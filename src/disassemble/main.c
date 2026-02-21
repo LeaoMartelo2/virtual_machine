@@ -6,7 +6,7 @@
 int main(int argc, char **argv) {
 
     if (argc < 2) {
-        printf("Usage: %s <obj file>\n", argv[0]);
+        printf("Usage: %s <raw obj data>\n", argv[0]);
         exit(1);
     }
 
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     size_t read_program_size = fread(read_object, sizeof(i32), MAX_PROGRAM_SIZE, file);
     fclose(file);
 
-    printf("Read %zu bytes from %s\n", read_program_size, argv[1]);
+    printf("Read %zu instructions from %s\n", read_program_size, argv[1]);
 
     for(size_t i = 0; i < read_program_size; ++i) {
         printf("%d ", read_object[i]);
