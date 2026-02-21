@@ -5,9 +5,13 @@ Simple attempt at implementing a virtual machine and a bytecode language that ru
 ## Compiling
 The main target is `Linux x86_64` but given the very simple nature of the project, it can be compiled almost anywhere.
 
+Clone the repository, and at the root of it run:
+
 ```shell
 make
 ```
+Yes, this is literally the only thing you need to do to build the project
+
 
 Will result in the following bynaries being generated:
 - `vm`: the interpreter / runs the bynaries / bytecode.

@@ -2,7 +2,7 @@ vm
 disasm
 vmasm
 disassembled.asm
-dumped-program.obj
+*.obj
 
 !*/
 
