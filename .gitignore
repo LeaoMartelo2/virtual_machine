@@ -1,5 +1,7 @@
 vm
 disasm
+disassembled.asm
+dumped-program.obj
 
 !*/
 
