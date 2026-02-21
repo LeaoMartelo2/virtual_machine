@@ -50,6 +50,9 @@ Then run the interpreter:
 The second to last instruction (`state_dump`) prints some info about the registers to the screen, it should look something like this:
 <details closed>
 <summary>`state_dump output`</summary>
+
+
+
 ```raw
 STATE_DUMP:
 ##############################
@@ -72,6 +75,8 @@ MACHINE INFO:
         condition_flag  = 1
 ##############################
 ```
+
+
 </details>
 
 Now take a look at your compiled object code by running:
