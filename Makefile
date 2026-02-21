@@ -42,4 +42,4 @@ build/assemble/main.o: src/assembler/main.c ${GLOBAL_DEPS}
 clean: clear
 
 clear:
-	rm -f dumped-program.obj compiled.obj out.obj disassembled.asm vm vmasm disasm build/vm/*.o build/disassemble/*.o build/assemble/*.o
+	rm -f *.obj disassembled.asm vm vmasm disasm build/vm/*.o build/disassemble/*.o build/assemble/*.o
