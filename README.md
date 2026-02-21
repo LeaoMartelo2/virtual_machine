@@ -20,7 +20,7 @@ Will result in the following bynaries being generated:
 
 ## Examples:
 
-Please refer to `example_programs/` directory for info for now.
+Please refer to `example_programs/` directory for more info for now.
 
 ### Example program:
 
