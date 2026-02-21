@@ -1,6 +1,7 @@
 #ifndef SPEC_H
 #define SPEC_H
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -39,38 +40,63 @@ typedef enum : i32 {
     JNE,
     JGE,
     JLE,
+
+    OPCODE_COUNT
 } Opcodes;
+
+#define MAX_ARGUMENT_COUNT 3
+
+typedef enum {
+    ARG_NONE = 0,
+    ARG_REG,
+    ARG_VAL,
+} Argument_type;
 
 typedef struct {
     const char *name;
     int arg_count;
+    Argument_type arg_types[MAX_ARGUMENT_COUNT];
 } Instruction_spec;
 
 // clang-format off
+
+/*
+   Table structure: [OPCODE] [ASM NAME] [ARG COUNT] [ARGUMENT TYPES]
+*/
+
 static const Instruction_spec ASSEMBLY_TABLE[] = {
-    [NO_OP]                                        = {"no_op", 0},
-    [HALT]                                         = {"halt", 0},
-    [STATE_DUMP]                                   = {"state_dump", 0},
-    [MOV]                                          = {"mov", 2},
-    [LD]                                           = {"ld", 2},
-    [INC]                                          = {"inc", 1},
-    [DEC]                                          = {"dec", 1},
-    [STO_PC]                                       = {"sto_pc", 1},
-    [CMP]                                          = {"cmp", 2},
-    [JMP]                                          = {"jmp", 1},
-    [JE]                                           = {"je", 1},
-    [JNE]                                          = {"jne", 1},
-    [JGE]                                          = {"jge", 1},
-    [JLE]                                          = {"jle", 1},
+    [NO_OP]        =  { "no_op", 0,        { ARG_NONE}},
+    [HALT]         =  { "halt", 0,         { ARG_NONE}},
+    [STATE_DUMP]   =  { "state_dump", 0,   { ARG_NONE}},
+    [PROGRAM_DUMP] =  { "program_dump", 0, { ARG_NONE}},
+    [MOV]          =  { "mov", 2,          { ARG_VAL, ARG_REG}},
+    [LD]           =  { "ld", 2,           { ARG_REG, ARG_REG}},
+    [INC]          =  { "inc", 1,          { ARG_REG}},
+    [DEC]          =  { "dec", 1,          { ARG_REG}},
+    [STO_PC]       =  { "sto_pc", 1,       { ARG_REG}},
+    [CMP]          =  { "cmp", 2,          { ARG_REG, ARG_REG}},
+    [JMP]          =  { "jmp", 1,          { ARG_REG}},
+    [JE]           =  { "je", 1,           { ARG_REG}},
+    [JNE]          =  { "jne", 1,          { ARG_REG}},
+    [JGE]          =  { "jge", 1,          { ARG_REG}},
+    [JLE]          =  { "jle", 1,          { ARG_REG}},
 };
 
-// clang-format on
+// :Tabularize /[={]
+// align by "="  and "{"
+
+
+
+static_assert((sizeof(ASSEMBLY_TABLE) / sizeof(ASSEMBLY_TABLE[0])) == OPCODE_COUNT,
+              "Error: ASSEMBLY_TABLE must contain all elements of the OPCODES table");
 
 typedef enum : i32 {
     COND_NEGATIVE = -1,
-    COND_ZERO = 0,
+    COND_ZERO     = 0,
     COND_POSITIVE = 1,
 } Cond_flags;
+
+// clang-format on
 
 typedef struct {
     i32 program_counter;

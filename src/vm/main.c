@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-//#include "../spec.h"
+#include "../spec.h"
 #include "opcodes.h"
 
 #define ARR_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
