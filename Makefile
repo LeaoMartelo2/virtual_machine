@@ -32,4 +32,4 @@ build/disassemble/main.o: src/disassemble/main.c src/spec.h
 clean: clear
 
 clear:
-	rm -f dumped-program.obj dumped-program-RAW.obj vm disassemble build/vm/*.o build/disassemble/*.o
+	rm -f dumped-program.obj vm disassemble build/vm/*.o build/disassemble/*.o
