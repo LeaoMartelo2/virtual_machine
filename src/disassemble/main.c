@@ -37,7 +37,7 @@ void disassemble(i32 *buffer, size_t count, FILE *out, bool clean) {
             i32 val = buffer[pc + 1 + i];
 
             if (spec->arg_types[i] == ARG_REG) {
-                fprintf(out, " reg%d", val);
+                fprintf(out, " %%%d", val);
             } else {
                 fprintf(out, " %d", val);
             }

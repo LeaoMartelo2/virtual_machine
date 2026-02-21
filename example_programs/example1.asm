@@ -1,33 +1,33 @@
-mov -5, reg1
-mov 0, reg4
+mov -5, %1
+mov 0, %4
 no_op
-ld reg1, reg2
+ld %1, %2
 no_op
-sto_pc reg0
-inc reg3
-cmp reg3, reg4
-je reg0
+sto_pc %0
+inc %3
+cmp %3, %4
+je %0
 no_op
-dec reg3
+dec %3
 no_op
-sto_pc reg9
-inc reg1
-cmp reg1, reg4
-jne reg9
+sto_pc %9
+inc %1
+cmp %1, %4
+jne %9
 no_op
-mov 22, reg6
-mov 20, reg7
-sto_pc reg9
-dec reg6
-cmp reg6, reg7
-jge reg9
+mov 22, %6
+mov 20, %7
+sto_pc %9
+dec %6
+cmp %6, %7
+jge %9
 no_op
-mov 18, reg6
-mov 20, reg7
-sto_pc reg9
-inc reg6
-cmp reg6, reg7
-jle reg9
+mov 18, %6
+mov 20, %7
+sto_pc %9
+inc %6
+cmp %6, %7
+jle %9
 no_op
 state_dump
 program_dump
