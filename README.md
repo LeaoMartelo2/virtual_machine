@@ -59,15 +59,9 @@ STATE_DUMP:
 REGISTERS:
         register[ 0] =  5
         register[ 1] = 11
-        register[ 2] =  0
-        register[ 3] =  0
-        register[ 4] =  0
-        register[ 5] =  0
-        register[ 6] =  0
-        register[ 7] =  0
-        register[ 8] =  0
-        register[ 9] =  0
+[...]
         register[10] = 10
+[...]
 ##############################
 MACHINE INFO:
         program_couter  = 12
