@@ -29,11 +29,11 @@ Minimal program that makes a loop by incrementing a value and comparing it until
 ```asm
 # you can leave comments with a hash 
 mov 10, $10
-sto_pc %0
+loop_start:
 # you can adress registers with both '%' and '$'
 inc $1
 cmp $1, $10
-jle $0
+jle .loop_start
 state_dump
 halt
 ```
@@ -64,12 +64,6 @@ REGISTERS:
 [...]
         register[10] = 10
 [...]
-##############################
-MACHINE INFO:
-        program_couter  = 12
-        program_size    = 14
-        condition_flag  = 1
-##############################
 ```
 
 
@@ -96,11 +90,11 @@ Now take a look at your compiled object code by running:
 | DEC    |  Decrements the value of a register by 1 | 1 | dec $reg |
 | STO\_PC | Stores the imediate next OPERATION entry to a register | 1 | sto\_pc $reg |
 | CMP    | Compares the values of 2 registers by subtracting reg\_b from reg\_a, then sets COMP flag accordingly | 2 | cmp $reg\_a, $reg\_b|
-| JMP | Unconditional jump, sets program counter to value of register | 1 | jmp $reg|
-| JE | Jump if equals. Jumps program counter to value of register if last CMP instruction yielded 0| 1 | je $reg\_jumpTo|
-| JNE | Jump if not equals. Jumps program counter to value of register if last CMP instruction yielded anything other than ZERO| 1 |jne $reg\_jumpTo| 
-| JGE | Jump if greater or equals. Jumps the program counter to the value of register if the last CMP instruction yielded ZERO or POSITIVE | 1 | jge $reg\_jumpTo|
-| JLE | Jump if less or equals. Jumps the program counter to the value of register if the last CMP instruction yielded NEGATIVE or ZERO| 1 | jle $reg\_jumpTo |
+| JMP | Unconditional jump, sets program counter to value | 1 | jmp $reg|
+| JE | Jump if equals. Jumps program counter to value if last CMP instruction yielded 0| 1 | je %value|
+| JNE | Jump if not equals. Jumps program counter to value if last CMP instruction yielded anything other than ZERO| 1 |jne %value| 
+| JGE | Jump if greater or equals. Jumps the program counter to value if the last CMP instruction yielded ZERO or POSITIVE | 1 | jge %value|
+| JLE | Jump if less or equals. Jumps the program counter to value if the last CMP instruction yielded NEGATIVE or ZERO| 1 | jle %value|
 | ADD | Adds reg\_a and reg\_b, stores result to reg\_a | 2 | add $reg\_a $reg\_b |
 | SUB | Subtract reg\_a and reg\_b, stores result to reg\_a | 2 | sub $reg\_a $reg\_b |
 | MUL | Multiply reg\_a and reg\_b, stores result to reg\_a | 2 | mul $reg\_a $reg\_b |
@@ -108,4 +102,4 @@ Now take a look at your compiled object code by running:
 | MOD | Gives division remainder (modulo) of reg\_a and reg\_b, stores result to reg\_a | 2 | mod $reg\_a $reg\_b |
 
 - $reg = register index (Ex: $1, $2, $10)
-- %value = any signed 32 Bit number (int32\_t)
+- %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `Label`
