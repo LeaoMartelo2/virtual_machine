@@ -35,10 +35,13 @@ int main(int argc, char **argv) {
 
     vm.program_size = (i32)loaded_program_size;
 
-    printf("==== VM INIT ===\n");
-
     vm.halted = false;
     vm.verbose = true;
+    vm.stack_head = 0;
+    memset(vm.stack, (i32)0, sizeof(vm.stack));
+
+    printf("==== VM INIT ===\n");
+
 
     while (!vm.halted) {
 
@@ -122,6 +125,10 @@ int main(int argc, char **argv) {
 
         case MOD: {
             mod(&vm);
+        } break;
+
+        case RET: {
+            ret(&vm);
         } break;
 
         default: {

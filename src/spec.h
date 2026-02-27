@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define MAX_PROGRAM_SIZE 32767
+#define MAX_STACK_SIZE 256
 
 typedef int32_t i32;
 
@@ -45,6 +46,11 @@ typedef enum : i32 {
     MUL,
     DIV,
     MOD,
+    PUSH,
+    I_PUSH,
+    POP,
+    VOID_POP,
+    RET,
 
     OPCODE_COUNT
 } Opcodes;
@@ -90,6 +96,11 @@ static const Instruction_spec ASSEMBLY_TABLE[] = {
     [MUL]          =  { "mul", 2,          { ARG_REG, ARG_REG}},
     [DIV]          =  { "div", 2,          { ARG_REG, ARG_REG}},
     [MOD]          =  { "mod", 2,          { ARG_REG, ARG_REG}},
+    [PUSH]         =  { "push", 1,         { ARG_REG}},
+    [I_PUSH]       =  { "i_push", 1,       { ARG_VAL}},
+    [POP]          =  { "pop", 1,          { ARG_REG}},
+    [VOID_POP]     =  { "void_pop", 0,     { ARG_NONE}},
+    [RET]          =  { "ret", 1,          { ARG_VAL }},
 };
 
 // :Tabularize /[={]
@@ -112,6 +123,8 @@ typedef struct {
     i32 program_size;
     i32 registers[REG_COUNT];
     i32 cond_flag;
+    i32 stack[MAX_STACK_SIZE];
+    i32 stack_head;
     bool halted;
     bool verbose;
 } VM;

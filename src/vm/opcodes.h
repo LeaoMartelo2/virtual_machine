@@ -23,5 +23,6 @@ void sub(VM *vm);
 void mul(VM *vm);
 void div_(VM *vm);
 void mod(VM *vm);
+void ret(VM *vm);
 
 #endif /* OPCODES_H */

@@ -341,3 +341,8 @@ void mod(VM *vm) {
 
     vm->program_counter++;
 }
+
+void ret(VM *vm) {
+
+}
+
