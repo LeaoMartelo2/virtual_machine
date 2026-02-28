@@ -35,10 +35,12 @@ int main(int argc, char **argv) {
 
     vm.program_size = (i32)loaded_program_size;
 
-    printf("==== VM INIT ===\n");
-
     vm.halted = false;
-    vm.verbose = true;
+    vm.verbose = false;
+    vm.stack_head = 0;
+    memset(vm.stack, (i32)0, sizeof(vm.stack));
+
+    printf("==== VM INIT ===\n");
 
     while (!vm.halted) {
 
@@ -56,8 +58,16 @@ int main(int argc, char **argv) {
             state_dump(&vm);
         } break;
 
+        case REGISTER_DUMP: {
+            register_dump(&vm);
+        } break;
+
         case PROGRAM_DUMP: {
             program_dump(&vm);
+        } break;
+
+        case TOGGLE_VERBOSE: {
+            toggle_verbose(&vm);
         } break;
 
         case MOV: {
@@ -122,6 +132,30 @@ int main(int argc, char **argv) {
 
         case MOD: {
             mod(&vm);
+        } break;
+
+        case PUSH: {
+            push(&vm);
+        } break;
+
+        case I_PUSH: {
+            i_push(&vm);
+        } break;
+
+        case POP: {
+            pop(&vm);
+        } break;
+
+        case VOID_POP: {
+            void_pop(&vm);
+        } break;
+
+        case CALL: {
+            call(&vm);
+        } break;
+
+        case RET: {
+            ret(&vm);
         } break;
 
         default: {

@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void vm_verbose_(VM *vm, const char *format, ...) {
 
@@ -36,15 +37,42 @@ void state_dump(VM *vm) {
     printf("STATE_DUMP: \n");
     printf("##############################\n");
     printf("REGISTERS:\n");
-    for (i32 i = 0; i < REG_COUNT; ++i) {
+    for (i32 i = 0; i < NAMED_REGISTERS_SPLIT; ++i) {
         printf("        register[%2d] = %2d\n", i, vm->registers[i]);
     }
     printf("##############################\n");
     printf("MACHINE INFO:\n");
     printf("        program_couter  = %d\n", vm->program_counter);
     printf("        program_size    = %d\n", vm->program_size);
+    printf("        stack_head      = %d\n", vm->stack_head);
+    printf("        top of stack    = %d\n", vm->stack[vm->stack_head - 1]);
     printf("        condition_flag  = %d\n", vm->cond_flag);
+    printf("        return address  = %d\n", vm->return_address_stack[vm->return_address_head - 1]);
     printf("##############################\n");
+    vm->program_counter++;
+}
+
+void register_dump(VM *vm) {
+
+    printf("REGISTER_DUMP: \n");
+    printf("##############################\n");
+
+    vm->program_counter++;
+    i32 reg_start_ind = vm->program[vm->program_counter];
+
+    vm->program_counter++;
+    i32 reg_end_ind = vm->program[vm->program_counter];
+
+    assert(reg_end_ind + 1 <= NAMED_REGISTERS_SPLIT);
+    assert(reg_start_ind <= reg_end_ind);
+
+    printf("Dumping registers [%d] .. [%d]:\n\n", reg_start_ind, reg_end_ind);
+
+    for (i32 i = reg_start_ind; i < reg_end_ind + 1; ++i) {
+        printf("        register[%2d] = %2d\n", i, vm->registers[i]);
+    }
+    printf("##############################\n");
+
     vm->program_counter++;
 }
 
@@ -54,10 +82,30 @@ void program_dump(VM *vm) {
     const char *rawdump = "dumped-program.obj";
 
     FILE *file = fopen(rawdump, "wb");
+    if (!file) {
+        exit(1);
+    }
     fwrite(vm->program, sizeof(i32), vm->program_size, file);
     fclose(file);
 
     printf("    Dumped loaded program bytecode to %s\n", rawdump);
+
+    vm->program_counter++;
+}
+
+void toggle_verbose(VM *vm) {
+
+    vm->program_counter++;
+    i32 value = vm->program[vm->program_counter];
+
+    if (value >= 1) {
+        vm->verbose = true;
+        vm_verbose("TOGGLE_VERBOSE: { VERBOSE MODE: ENABLED }\n");
+    }
+
+    if (value <= 0) {
+        vm->verbose = false;
+    }
 
     vm->program_counter++;
 }
@@ -313,7 +361,7 @@ void div_(VM *vm) {
 
     vm_verbose(" reg[%d] / reg[%d] | ", reg_a_ind, reg_b_ind);
 
-    i32 result = reg_a  / reg_b;
+    i32 result = reg_a / reg_b;
     vm_verbose(" %d / %d = %d }\n", reg_a, reg_b, result);
 
     vm->registers[reg_a_ind] = result;
@@ -340,4 +388,79 @@ void mod(VM *vm) {
     vm->registers[reg_a_ind] = result;
 
     vm->program_counter++;
+}
+
+void push(VM *vm) {
+    vm_verbose("PUSH: {");
+
+    vm->program_counter++;
+    i32 reg_ind = vm->program[vm->program_counter];
+    i32 reg_value = vm->registers[reg_ind];
+
+    vm->stack[vm->stack_head] = reg_value;
+    vm->stack_head++;
+
+    vm_verbose(" stack[%d] = %d }\n", vm->stack_head, reg_value);
+
+    vm->program_counter++;
+}
+
+void i_push(VM *vm) {
+
+    vm_verbose("I_PUSH: {");
+
+    vm->program_counter++;
+    i32 value = vm->program[vm->program_counter];
+
+    vm->stack[vm->stack_head] = value;
+    vm->stack_head++;
+
+    vm_verbose(" stack[%d] = %d }\n", vm->stack_head, value);
+
+    vm->program_counter++;
+}
+
+void pop(VM *vm) {
+
+    vm_verbose("POP: {");
+
+    vm->program_counter++;
+
+    i32 reg_ind = vm->program[vm->program_counter];
+
+    vm->registers[reg_ind] = vm->stack[vm->stack_head - 1];
+    vm_verbose(" reg[%d] = %d }\n", reg_ind, vm->stack[vm->stack_head - 1]);
+    vm->stack_head--;
+
+    vm->program_counter++;
+}
+
+void void_pop(VM *vm) {
+    vm_verbose("VOID_POP: {");
+
+    vm->stack_head--;
+    vm_verbose(" vm->stack_head = %d }\n", vm->stack_head);
+
+    vm->program_counter++;
+}
+
+void call(VM *vm) {
+    vm_verbose("CALL: {");
+    vm->program_counter++;
+
+    vm->return_address_stack[vm->return_address_head] = vm->program_counter + 1;
+    vm->return_address_head++;
+
+    i32 jmp_to = vm->program[vm->program_counter];
+    vm_verbose(" program_couter -> %.2d }\n", jmp_to);
+    vm->program_counter = jmp_to;
+}
+
+void ret(VM *vm) {
+    vm_verbose("RET: {");
+
+    vm_verbose(" program_couter = %d }\n", vm->return_address_stack[vm->return_address_head - 1]);
+    vm->program_counter = vm->return_address_stack[vm->return_address_head - 1];
+
+    vm->return_address_head--;
 }
