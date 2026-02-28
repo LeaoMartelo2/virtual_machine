@@ -84,7 +84,7 @@ Now take a look at your compiled object code by running:
 | STATE\_DUMP | Prints the value of the registers, program size and program counter | 0 | state\_dump |
 | REGISTER\_DUMP | Prints the value of the registers arg\_ until arg\_b, inclusive| 2 | register\_dump $arg\_a, $arg\_b |
 | PROGRAM\_DUMP | Dumps the current loaded program to 'dumped-program.obj' | 0 | program\_dump|
-| TOGGLE\_VERBOSE | Toggles verbose output of the machine if value `>0`, starts off | 1 | toggle\_verbose %value|
+| TOGGLE\_VERBOSE | Toggles verbose output of the machine on or off if `value > 0`, starts off | 1 | toggle\_verbose %value|
 | MOV    |  Moves a value in to a register | 2 | mov %value, $reg | 
 | LD     |  Loads the value of a register in to another | 2 | ld $reg\_from, $reg\_to |
 | INC    |  Increments the value of a register by 1 | 1 | inc $reg |
@@ -105,7 +105,7 @@ Now take a look at your compiled object code by running:
 | I\_PUSH | Pushes an imediate value to the stack | 1 | i\_push %value |
 | POP | Pops the last item in the stack, saves it to a reg\_a | 1 | pop $reg\_a |
 | VOID\_POP | Pops the last item in the stack, discarding its value| 0 | void\_pop |
-| CALL | Jumps to a label and sets the return address stack | 1 | call %value\label |
+| CALL | Jumps to a label and sets the return address stack | 1 | call %value/label |
 | RET | Returns by jumping to the last return address stack, pops its value | 0 | ret |
 
 
