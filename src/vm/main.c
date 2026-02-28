@@ -142,6 +142,18 @@ int main(int argc, char **argv) {
             i_push(&vm);
         } break;
 
+        case POP: {
+            pop(&vm);
+        } break;
+
+        case VOID_POP: {
+            void_pop(&vm);
+        } break;
+
+        case CALL: {
+            call(&vm);
+        } break;
+
         case RET: {
             ret(&vm);
         } break;

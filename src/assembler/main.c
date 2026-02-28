@@ -158,13 +158,44 @@ int main(int argc, char **argv) {
                     // registers
                     if (ASSEMBLY_TABLE[i].arg_types[j] == ARG_REG) {
                         if (token[0] == '%' || token[0] == '$') {
-                            int reg_idx = atoi(token + 1);
-                            if (reg_idx >= 0 && reg_idx < REG_COUNT) {
-                                program_buffer[head_pos++] = reg_idx;
+
+                            const char *reg_name = token + 1; /* skip prefix */
+
+                            char *endptr;
+                            int reg_idx = (int)strtol(reg_name, &endptr, 10);
+
+                            if (*endptr == '\0') {
+                                /* is a number */
+
+                                if (reg_idx >= 0 && reg_idx < NAMED_REGISTERS_SPLIT) {
+                                    program_buffer[head_pos++] = reg_idx;
+                                } else {
+                                    fprintf(stderr, "Error: invalid register index %d\n", reg_idx);
+                                    exit(1);
+                                }
+
                             } else {
-                                fprintf(stderr, "Error: invalid register index %d\n", reg_idx);
-                                exit(1);
+
+                                /* not a number, search for named registers */
+
+                                bool reg_found = false;
+
+                                for (size_t r = 0; r < NAMED_REGISTER_COUNT; ++r) {
+                                    if(strcmp(reg_name, NAMED_REGISTERS[r].name) == 0) {
+                                        program_buffer[head_pos++] = NAMED_REGISTERS[r].reg_idx;
+                                        reg_found = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!reg_found) {
+                                    fprintf(stderr, "Error: unknown named register '$%s'\n", reg_name);
+                                    exit(1);
+                                }
+
                             }
+
+
                         } else {
                             fprintf(stderr, "Error: expected '$' for register, found '%s'\n", token);
                             exit(1);

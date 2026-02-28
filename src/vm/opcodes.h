@@ -27,6 +27,9 @@ void div_(VM *vm);
 void mod(VM *vm);
 void push(VM *vm);
 void i_push(VM *vm);
+void pop(VM *vm);
+void void_pop(VM *vm);
+void call(VM *vm);
 void ret(VM *vm);
 
 #endif /* OPCODES_H */

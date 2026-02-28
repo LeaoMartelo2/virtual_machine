@@ -22,8 +22,23 @@ typedef enum : i32 {
     REG_8,
     REG_9,
     REG_10,
-    REG_COUNT,
+
+    NAMED_REGISTERS_SPLIT,
+
+    REG_ARG_A,
+    REG_ARG_B,
+    REG_ARG_C,
+    REG_ARG_D,
+    REG_RET,
+
+    REG_COUNT
+
 } Registers;
+
+typedef struct {
+    const char *name;
+    Registers reg_idx;
+} Named_register;
 
 typedef enum : i32 {
     NO_OP = 0,
@@ -52,6 +67,7 @@ typedef enum : i32 {
     I_PUSH,
     POP,
     VOID_POP,
+    CALL,
     RET,
 
     OPCODE_COUNT
@@ -104,7 +120,8 @@ static const Instruction_spec ASSEMBLY_TABLE[] = {
     [I_PUSH]         =  { "i_push", 1,         { ARG_VAL}},
     [POP]            =  { "pop", 1,            { ARG_REG}},
     [VOID_POP]       =  { "void_pop", 0,       { ARG_NONE}},
-    [RET]            =  { "ret", 1,            { ARG_VAL}},
+    [CALL]           =  { "call", 1,           { ARG_VAL}},
+    [RET]            =  { "ret", 0,            { ARG_NONE}},
 };
 
 // :Tabularize /[={]
@@ -115,9 +132,21 @@ static_assert((sizeof(ASSEMBLY_TABLE) / sizeof(ASSEMBLY_TABLE[0])) == OPCODE_COU
 
 typedef enum : i32 {
     COND_NEGATIVE = -1,
-    COND_ZERO     = 0,
-    COND_POSITIVE = 1,
+    COND_ZERO     =  0,
+    COND_POSITIVE =  1,
 } Cond_flags;
+
+
+static const Named_register NAMED_REGISTERS[] = {
+
+     { "arg_a", REG_ARG_A},
+     { "arg_b", REG_ARG_B},
+     { "arg_c", REG_ARG_C},
+     { "arg_d", REG_ARG_D},
+     { "ret",   REG_RET}
+};
+
+#define NAMED_REGISTER_COUNT (sizeof(NAMED_REGISTERS) / sizeof(Named_register))
 
 // clang-format on
 
@@ -125,10 +154,16 @@ typedef struct {
     i32 program_counter;
     i32 program[MAX_PROGRAM_SIZE];
     i32 program_size;
+
     i32 registers[REG_COUNT];
     i32 cond_flag;
+
     i32 stack[MAX_STACK_SIZE];
     i32 stack_head;
+
+    i32 return_address_stack[MAX_STACK_SIZE];
+    i32 return_address_head;
+
     bool halted;
     bool verbose;
 } VM;

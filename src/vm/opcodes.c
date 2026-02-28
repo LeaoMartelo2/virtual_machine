@@ -37,7 +37,7 @@ void state_dump(VM *vm) {
     printf("STATE_DUMP: \n");
     printf("##############################\n");
     printf("REGISTERS:\n");
-    for (i32 i = 0; i < REG_COUNT; ++i) {
+    for (i32 i = 0; i < NAMED_REGISTERS_SPLIT; ++i) {
         printf("        register[%2d] = %2d\n", i, vm->registers[i]);
     }
     printf("##############################\n");
@@ -47,6 +47,7 @@ void state_dump(VM *vm) {
     printf("        stack_head      = %d\n", vm->stack_head);
     printf("        top of stack    = %d\n", vm->stack[vm->stack_head - 1]);
     printf("        condition_flag  = %d\n", vm->cond_flag);
+    printf("        return address  = %d\n", vm->return_address_stack[vm->return_address_head - 1]);
     printf("##############################\n");
     vm->program_counter++;
 }
@@ -62,7 +63,7 @@ void register_dump(VM *vm) {
     vm->program_counter++;
     i32 reg_end_ind = vm->program[vm->program_counter];
 
-    assert(reg_end_ind + 1 <= REG_COUNT);
+    assert(reg_end_ind + 1 <= NAMED_REGISTERS_SPLIT);
     assert(reg_start_ind <= reg_end_ind);
 
     printf("Dumping registers [%d] .. [%d]:\n\n", reg_start_ind, reg_end_ind);
@@ -390,7 +391,7 @@ void mod(VM *vm) {
 }
 
 void push(VM *vm) {
-    vm_verbose("PUSH {");
+    vm_verbose("PUSH: {");
 
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
@@ -405,8 +406,8 @@ void push(VM *vm) {
 }
 
 void i_push(VM *vm) {
-    
-    vm_verbose("I_PUSH {");
+
+    vm_verbose("I_PUSH: {");
 
     vm->program_counter++;
     i32 value = vm->program[vm->program_counter];
@@ -419,4 +420,47 @@ void i_push(VM *vm) {
     vm->program_counter++;
 }
 
-void ret(VM *vm) {}
+void pop(VM *vm) {
+
+    vm_verbose("POP: {");
+
+    vm->program_counter++;
+
+    i32 reg_ind = vm->program[vm->program_counter];
+
+    vm->registers[reg_ind] = vm->stack[vm->stack_head - 1];
+    vm_verbose(" reg[%d] = %d }\n", reg_ind, vm->stack[vm->stack_head - 1]);
+    vm->stack_head--;
+
+    vm->program_counter++;
+}
+
+void void_pop(VM *vm) {
+    vm_verbose("VOID_POP: {");
+
+    vm->stack_head--;
+    vm_verbose(" vm->stack_head = %d }\n", vm->stack_head);
+
+    vm->program_counter++;
+}
+
+void call(VM *vm) {
+    vm_verbose("CALL: {");
+    vm->program_counter++;
+
+    vm->return_address_stack[vm->return_address_head] = vm->program_counter + 1;
+    vm->return_address_head++;
+
+    i32 jmp_to = vm->program[vm->program_counter];
+    vm_verbose(" program_couter -> %.2d }\n", jmp_to);
+    vm->program_counter = jmp_to;
+}
+
+void ret(VM *vm) {
+    vm_verbose("RET: {");
+
+    vm_verbose(" program_couter = %d }\n", vm->return_address_stack[vm->return_address_head - 1]);
+    vm->program_counter = vm->return_address_stack[vm->return_address_head - 1];
+
+    vm->return_address_head--;
+}
