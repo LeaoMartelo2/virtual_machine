@@ -66,6 +66,10 @@ int main(int argc, char **argv) {
             program_dump(&vm);
         } break;
 
+        case STACK_DUMP: {
+            stack_dump(&vm);
+        } break;
+
         case TOGGLE_VERBOSE: {
             toggle_verbose(&vm);
         } break;
