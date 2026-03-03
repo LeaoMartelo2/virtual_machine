@@ -8,6 +8,22 @@
 
 #include "../spec.h"
 
+char *strdup_vm(const char *s) {
+
+    if (s == NULL) return NULL;
+
+    size_t len = strlen(s) + 1;
+    char *result = malloc(len);
+
+    if (result != NULL) {
+        memcpy(result, s, len);
+    }
+
+    return result;
+}
+
+
+
 typedef struct {
     char *name;
     i32 address;
@@ -72,7 +88,7 @@ int main(int argc, char **argv) {
     size_t head_pos = 0;
     size_t virtual_head_pos = 0;
 
-    char *buffer_copy = strdup(buffer);
+    char *buffer_copy = strdup_vm(buffer);
 
     // 1st pass: fill symbol table
 
@@ -94,7 +110,7 @@ int main(int argc, char **argv) {
             strncpy(label_name, token, len - 1);
             label_name[len - 1] = '\0';
 
-            symbol_table[label_count].name = strdup(label_name);
+            symbol_table[label_count].name = strdup_vm(label_name);
             symbol_table[label_count].address = (i32)virtual_head_pos;
             label_count++;
         } else {

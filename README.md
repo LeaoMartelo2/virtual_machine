@@ -1,41 +1,47 @@
 # virtual\_machine
 
-Simple attempt at implementing a virtual machine and a bytecode language that runs on it.
+Small assembly language that gets compiled to bytecode and runs on its own interpreter.
+
+The goal of the project is to be very simple and thus be used as a learning experience.
+This also means the code is not often the best, but very explicit about what it does.
+I've also tried to maintain the assembly instructions with non-cryptic names, making it easier to communicate meaning.
 
 ## Compiling
 The main target is `Linux x86_64` but given the very simple nature of the project, it can be compiled almost anywhere.
 
-Clone the repository, and at the root of it run:
+Requirements:
+ - `gcc` or any C compiler with `C11` support
+ - `make`
+
+Clone the repository, and at the root of simply run:
 
 ```shell
 make
 ```
-Yes, this is literally the only thing you need to do to build the project
 
-
-Will result in the following bynaries being generated:
+Will result in the following bynaries:
 - `vm`: the interpreter / runs the bynaries / bytecode.
 - `vmasm`: the assembler / turns our assembly files in to bytecode for the vm.
-- `disasm`: the disassembler / allows you to read `.obj` bytecode files without running them, and turn them back in to their `.asm` form.
+- `disasm`: the disassembler / allows you to peek inside the `.obj` files, and see a approximation of their pre-assembled code
 
 ## Examples:
 
-Please refer to `example_programs/` directory for more info for now.
+Please refer to `example_programs/` directory for more in depth info
 
 ### Example program:
 
 Minimal program that makes a loop by incrementing a value and comparing it until its bigger than the compared value
 
-```asm
+```asm 
 # you can leave comments with a hash 
-mov 10, $10
-loop_start:
-# you can adress registers with both '%' and '$'
-inc $1
-cmp $1, $10
-jle .loop_start
-state_dump
-halt
+toggle_verbose 1              # enable verbose output on the machine 
+mov 10, $10                   # stores '10' in the register 10
+loop_start:                   # define a Label where the loop starts
+inc $1                        # increments the value at register 1 by 1 ($1++)
+cmp $1, $10                   # compares register 1 with register 10
+jle .loop_start               # goes to the start of the loop of the comparasion was less or equal
+state_dump                    # displays some information about the machine 
+halt                          # finishes machine execution and exits
 ```
 
 save this to `my_program.asm`
@@ -84,12 +90,13 @@ Now take a look at your compiled object code by running:
 | STATE\_DUMP | Prints the value of the registers, program size and program counter | 0 | state\_dump |
 | REGISTER\_DUMP | Prints the value of the registers arg\_ until arg\_b, inclusive| 2 | register\_dump $arg\_a, $arg\_b |
 | PROGRAM\_DUMP | Dumps the current loaded program to 'dumped-program.obj' | 0 | program\_dump|
+| STACK\_DUMP| Prints the value at current stack header, and 3 surrounding values | 0 | stack\_dump|
 | TOGGLE\_VERBOSE | Toggles verbose output of the machine on or off if `value > 0`, starts off | 1 | toggle\_verbose %value|
 | MOV    |  Moves a value in to a register | 2 | mov %value, $reg | 
 | LD     |  Loads the value of a register in to another | 2 | ld $reg\_from, $reg\_to |
 | INC    |  Increments the value of a register by 1 | 1 | inc $reg |
 | DEC    |  Decrements the value of a register by 1 | 1 | dec $reg |
-| STO\_PC | Stores the imediate next OPERATION entry to a register | 1 | sto\_pc $reg |
+| STO\_PC | Stores the imediate next OPERATION entry to a register, mostly deprecated in favor of labels | 1 | sto\_pc $reg |
 | CMP    | Compares the values of 2 registers by subtracting reg\_b from reg\_a, then sets COMP flag accordingly | 2 | cmp $reg\_a, $reg\_b|
 | JMP | Unconditional jump, sets program counter to value | 1 | jmp %value/label|
 | JE | Jump if equals. Jumps program counter to value if last CMP instruction yielded 0| 1 | je %value/label|
@@ -112,3 +119,7 @@ Now take a look at your compiled object code by running:
 
 - $reg = register index (Ex: $1, $2, $10)
 - %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `Label`
+- There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values of functions
+
+
+
