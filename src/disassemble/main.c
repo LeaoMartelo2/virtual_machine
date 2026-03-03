@@ -28,7 +28,7 @@ void disassemble(i32 *buffer, size_t count, FILE *out, bool clean) {
         }
 
         if (!clean) {
-            fprintf(out, "0x%08zx: %-12s", pc, spec->name);
+            fprintf(out, "0x%08zx(%2zu): %-15s", pc, pc, spec->name);
         } else {
             fprintf(out, "%s", spec->name);
         }

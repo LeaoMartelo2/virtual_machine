@@ -8,6 +8,7 @@ void halt(VM *vm);
 void state_dump(VM *vm);
 void register_dump(VM *vm);
 void program_dump(VM *vm);
+void stack_dump(VM *vm);
 void toggle_verbose(VM *vm);
 void mov(VM *vm);
 void ld(VM *vm);

@@ -93,6 +93,39 @@ void program_dump(VM *vm) {
     vm->program_counter++;
 }
 
+void stack_dump(VM *vm) {
+    printf("STACK_DUMP:\n");
+    printf("##############################\n");
+
+    i32 start = vm->stack_head - 2;
+
+    if (start < 0) start = 0;
+
+    i32 end = start + 5;
+
+    if (end > MAX_STACK_SIZE) {
+        end = MAX_STACK_SIZE;
+
+        start = end - 5;
+
+        if (start < 0) start = 0;
+    }
+
+    for (int i = start; i < end; ++i) {
+        printf("%d", vm->stack[i]);
+
+        if (i == vm->stack_head) {
+            printf("    <- stack_head");
+        }
+        printf("\n");
+
+    }
+
+    printf("##############################\n");
+
+    vm->program_counter++;
+}
+
 void toggle_verbose(VM *vm) {
 
     vm->program_counter++;
@@ -398,9 +431,9 @@ void push(VM *vm) {
     i32 reg_value = vm->registers[reg_ind];
 
     vm->stack[vm->stack_head] = reg_value;
+    vm_verbose(" stack[%d] = %d }\n", vm->stack_head, reg_value);
     vm->stack_head++;
 
-    vm_verbose(" stack[%d] = %d }\n", vm->stack_head, reg_value);
 
     vm->program_counter++;
 }
@@ -413,9 +446,9 @@ void i_push(VM *vm) {
     i32 value = vm->program[vm->program_counter];
 
     vm->stack[vm->stack_head] = value;
+    vm_verbose(" stack[%d] = %d }\n", vm->stack_head, value);
     vm->stack_head++;
 
-    vm_verbose(" stack[%d] = %d }\n", vm->stack_head, value);
 
     vm->program_counter++;
 }
