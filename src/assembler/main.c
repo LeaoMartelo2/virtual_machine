@@ -1,20 +1,28 @@
 // this leaks memory like crazy xd
 
-#include <linux/limits.h>
+#define _POSIX_C_SOURCE 200809L 
+
+#include <limits.h>
+#include <libgen.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "../spec.h"
+
+
+#define RUNNER_NAME "vm"
+
 
 char *strdup_vm(const char *s) {
 
     if (s == NULL) return NULL;
 
-    size_t len = strlen(s) + 1;
+    size_t len = strnlen(s, MAX_PROGRAM_SIZE) + 1;
     char *result = malloc(len);
 
     if (result != NULL) {
@@ -26,31 +34,37 @@ char *strdup_vm(const char *s) {
 
 void run_after_compile(const char *out_file) {
 
-    char exe_path[1024];
-    char vm_path[1024 + 4];
+    char exe_path[PATH_MAX];
+    char vm_path[PATH_MAX];
+    char temp_path[PATH_MAX];
 
-    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) -1);
 
     if (len == -1) {
-        fprintf(stderr, "readlink error\n");
+        perror("readlink");
         return;
     }
 
     exe_path[len] = '\0';
 
-    char *last_slash = strrchr(exe_path, '/');
+    strncpy(temp_path, exe_path, sizeof(temp_path));
+    char *dir = dirname(temp_path);
 
-    if (last_slash != NULL) {
-        *last_slash = '\0';
+    if(snprintf(vm_path, sizeof(vm_path), "%s/"RUNNER_NAME, dir) >= (int)sizeof(vm_path)) {
+        fprintf(stderr, "path too long\n");
+        return;
     }
 
-    snprintf(vm_path, sizeof(vm_path), "%s/vm", exe_path);
+    if (access(vm_path, X_OK)) {
+        perror("Accessing the runner failed");
+        return;
+    }
 
     char *args[] = {vm_path, (char *)out_file, NULL};
-
     execv(vm_path, args);
 
-    fprintf(stderr, "if you got here, execv failed misarably\n");
+
+    perror("if you got here, execv failed miserably");
     exit(1);
 }
 
@@ -62,7 +76,7 @@ typedef struct {
 int main(int argc, char **argv) {
 
     char *input_path = NULL;
-    // default to out.obj if not specified
+    // default to out.bin if not specified
     char *output_path = "out.bin";
 
     bool run_flag = false;
@@ -123,6 +137,8 @@ int main(int argc, char **argv) {
     size_t head_pos = 0;
     size_t virtual_head_pos = 0;
 
+    size_t max_limit = 256;
+
     char *buffer_copy = strdup_vm(buffer);
 
     // 1st pass: fill symbol table
@@ -138,7 +154,7 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        size_t len = strlen(token);
+        size_t len = strnlen(token, max_limit);
 
         if (token[len - 1] == ':') {
             char label_name[256];
@@ -173,6 +189,7 @@ int main(int argc, char **argv) {
 
     token = strtok(buffer, tokenizer_split);
 
+
     while (token != NULL) {
         // skip comments
         if (token[0] == '#') {
@@ -182,7 +199,7 @@ int main(int argc, char **argv) {
         }
 
         // skip labels
-        size_t len = strlen(token);
+        size_t len = strnlen(token, max_limit);
         if (len > 0 && token[len - 1] == ':') {
             token = strtok(NULL, tokenizer_split);
             continue;
@@ -218,7 +235,7 @@ int main(int argc, char **argv) {
                             if (*endptr == '\0') {
                                 /* is a number */
 
-                                if (reg_idx >= 0 && reg_idx < NAMED_REGISTERS_SPLIT) {
+                                if (reg_idx >= 0 && reg_idx < REG_COUNT) {
                                     program_buffer[head_pos++] = reg_idx;
                                 } else {
                                     fprintf(stderr, "Error: invalid register index %d\n", reg_idx);

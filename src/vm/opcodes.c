@@ -79,7 +79,7 @@ void register_dump(VM *vm) {
 void program_dump(VM *vm) {
     printf("PROGRAM_DUMP:\n");
 
-    const char *rawdump = "dumped-program.obj";
+    const char *rawdump = "dumped-program.bin";
 
     FILE *file = fopen(rawdump, "wb");
     if (!file) {
