@@ -10,7 +10,7 @@ I've also tried to maintain the assembly instructions with non-cryptic names, ma
 The main target is `Linux x86_64` but given the very simple nature of the project, it can be compiled almost anywhere.
 
 Requirements:
- - `gcc` or any C compiler with `C11` support
+ - `gcc` (or any compiler with gnu11 support)
  - `make`
 
 Clone the repository, and at the root of simply run:
@@ -53,7 +53,6 @@ Assemble it with:
 ./vmasm my_program.asm -o my_bytecode.bin
 ```
 
-
 Then run the interpreter:
 ```shell
 ./vm my_bytecode.bin
@@ -63,13 +62,17 @@ Alternatively use the `-run` flag on the assembler
 ```shell 
 ./vmasm my_program.asm -run
 ```
-- (This will leave a `out.bin` file) 
-- (This expects the `vm` binary to be in the same directory as `vmasm`)
-- (Alternatively, you can use a `shebang` at the start of the `.asm` file, by adding `#!./vmasm -run` and giving execute permisison to the script)
+
+Some info about the `-run` flag
+
+- It expects the interpreter binary (`vm`) to be in the same directory, so when installing system-wide make sure they are togather.
+- This will leave the default `out.bin` file, unless specified by `-o`
+- This also allows you to have a `shebang` at the start of your `.asm` files, by simply adding `#!./vmasm -run` (assuming at the project root
 
 The second to last instruction (`state_dump`) prints some info about the registers to the screen, it should look something like this:
+(Click to expand)
 <details closed>
-<summary>`state_dump output`</summary>
+<summary>state\_dump output</summary>
 
 
 ```raw
@@ -85,10 +88,13 @@ REGISTERS:
 
 </details>
 
-Now take a look at your compiled object code by running:
+Now take a look at your compiled binary code by running:
 ```shell
-./disasm my_bytecode.obj
+./disasm my_bytecode.bin
 ```
+
+Optionally add the `-s` flag to output the disassembled code to `disassembled.asm`
+
 
 ## Documentation
 
@@ -100,7 +106,7 @@ Now take a look at your compiled object code by running:
 | HALT   |  Halts the machine. | 0 | halt |
 | STATE\_DUMP | Prints the value of the registers, program size and program counter | 0 | state\_dump |
 | REGISTER\_DUMP | Prints the value of the registers arg\_ until arg\_b, inclusive| 2 | register\_dump $arg\_a, $arg\_b |
-| PROGRAM\_DUMP | Dumps the current loaded program to 'dumped-program.obj' | 0 | program\_dump|
+| PROGRAM\_DUMP | Dumps the current loaded program to 'dumped-program.bin' (useful when debugging a self altering program) | 0 | program\_dump|
 | STACK\_DUMP| Prints the value at current stack header, and 3 surrounding values | 0 | stack\_dump|
 | TOGGLE\_VERBOSE | Toggles verbose output of the machine on or off if `value > 0`, starts off | 1 | toggle\_verbose %value|
 | MOV    |  Moves a value in to a register | 2 | mov %value, $reg | 
@@ -130,7 +136,7 @@ Now take a look at your compiled object code by running:
 
 - $reg = register index (Ex: $1, $2, $10)
 - %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `Label`
-- There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values of functions
+- There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values for `call`
 
 
 
