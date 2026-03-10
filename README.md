@@ -7,10 +7,10 @@ This also means the code is not often the best, but very explicit about what it 
 I've also tried to maintain the assembly instructions with non-cryptic names, making it easier to communicate meaning.
 
 ## Compiling
-The main target is `Linux x86_64` but given the very simple nature of the project, it can be compiled almost anywhere.
+The target is `Linux x86_64` 
 
 Requirements:
- - `gcc` (or any compiler with gnu11 support)
+ - `gcc` (or equivalent with c11 support / Unix)
  - `make`
 
 Clone the repository, and at the root of simply run:
@@ -67,7 +67,7 @@ Some info about the `-run` flag
 
 - It expects the interpreter binary (`vm`) to be in the same directory, so when installing system-wide make sure they are togather.
 - This will leave the default `out.bin` file, unless specified by `-o`
-- This also allows you to have a `shebang` at the start of your `.asm` files, by simply adding `#!./vmasm -run` (assuming at the project root
+- This also allows you to have a `shebang` at the start of your `.asm` files, by simply adding `#!./vmasm -run` (assuming at the project root)
 
 The second to last instruction (`state_dump`) prints some info about the registers to the screen, it should look something like this:
 (Click to expand)
