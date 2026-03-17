@@ -8,7 +8,7 @@
 #define MAX_PROGRAM_SIZE 32767
 #define MAX_STACK_SIZE 256
 
-#define BINARY_MAGIC 0x4C65616F /* Leao */
+#define VM_MAGIC 0x525F4D56 /* VM_R */
 #define VM_VERSION 1
 
 typedef int32_t i32;
