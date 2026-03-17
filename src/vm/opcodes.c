@@ -542,7 +542,7 @@ void strlen_(VM *vm) {
     vm_verbose(" -> $%d", dest_reg);
 
     i32 len = 0;
-    if (buff_addr >= vm->data_offset && buff_addr < vm->program_size) {
+    if (buff_addr <= vm->data_offset && buff_addr < vm->program_size) {
         while ( buff_addr + len < vm->program_size && vm->program[buff_addr + len] != 0 ) {
             len++;
         }
