@@ -193,10 +193,10 @@ int main(int argc, char **argv) {
             // check if its an opcode (not in data section)
             for (i32 i = 0; i < OPCODE_COUNT; ++i) {
                 if (strcmp(token, ASSEMBLY_TABLE[i].name) == 0) {
-                    virtual_program_pos += 1;  // Opcode itself
-                    virtual_program_pos += ASSEMBLY_TABLE[i].arg_count;  // Arguments
+                    virtual_program_pos += 1;  // opcode itself
+                    virtual_program_pos += ASSEMBLY_TABLE[i].arg_count;  // arguments
 
-                    // skip the arguments in tokenization
+                    // Skip the arguments in tokenization
                     for (int j = 0; j < ASSEMBLY_TABLE[i].arg_count; ++j) {
                         strtok(NULL, tokenizer_split);
                     }
@@ -209,9 +209,8 @@ int main(int argc, char **argv) {
     }
 
     i32 data_size = (i32)virtual_data_pos;
-    //i32 program_start = data_head;  // data ends where program starts in output
 
-    // ========== PASS 2: load data section ==========
+    // ========== PASS 2: Load data section ==========
     in_data_section = false;
     token = strtok(buffer, tokenizer_split);
 
@@ -255,10 +254,15 @@ int main(int argc, char **argv) {
             continue;
         }
 
+        if (!in_data_section) {
+            token = strtok(NULL, tokenizer_split);
+            continue;
+        }
+
         token = strtok(NULL, tokenizer_split);
     }
 
-    // ========== PASS 3: generate program bytecode ==========
+    // ========== PASS 3: Generate program bytecode ==========
     in_data_section = false;
     token = strtok(buffer, tokenizer_split);
 
@@ -270,7 +274,7 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        // handle section markers
+        // handle section markers FIRST - before anything else
         if (strcmp(token, ".data") == 0) {
             in_data_section = true;
             token = strtok(NULL, tokenizer_split);
@@ -283,16 +287,27 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        size_t len = strnlen(token, max_limit);
-
-        // skip labels
-        if (len > 0 && token[len - 1] == ':') {
+        // if we're in data section, skip everything
+        if (in_data_section) {
+            size_t len = strnlen(token, max_limit);
+            
+            // skip label and string pair
+            if (len > 0 && token[len - 1] == ':') {
+                token = strtok(NULL, tokenizer_split);
+                if (token != NULL && token[0] == '"') {
+                    token = strtok(NULL, tokenizer_split);
+                }
+                continue;
+            }
+            
             token = strtok(NULL, tokenizer_split);
             continue;
         }
 
-        // skip if still in data section
-        if (in_data_section) {
+        size_t len = strnlen(token, max_limit);
+
+        // skip labels (they end with ':')
+        if (len > 0 && token[len - 1] == ':') {
             token = strtok(NULL, tokenizer_split);
             continue;
         }
