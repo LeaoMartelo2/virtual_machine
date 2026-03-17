@@ -6,16 +6,56 @@
 
 #include "../spec.h"
 
-void disassemble(i32 *buffer, size_t count, FILE *out, bool clean) {
+void disassemble_data_section(i32 *buffer, i32 data_size, FILE *out) {
+    if (data_size <= 0) return;
+    
+    fprintf(out, "\n=== DATA SECTION (size: %d bytes) ===\n\n", data_size);
+    
+    i32 i = 0;
+    while (i < data_size) {
+        fprintf(out, "0x%04x(%4d): ", i, i);
+        
+        // try to print as printable ASCII string
+        int string_len = 0;
+        while (i + string_len < data_size && buffer[i + string_len] != 0) {
+            i32 c = buffer[i + string_len];
+            if (c >= 32 && c < 127) {
+                fprintf(out, "%c", (char)c);
+                string_len++;
+            } else {
+                break;
+            }
+        }
+        
+        if (string_len > 0) {
+            i += string_len;
+            if (i < data_size && buffer[i] == 0) {
+                fprintf(out, "\\0\n");
+                i++;
+            }
+        } else {
+            // print as hex if not ASCII
+            fprintf(out, "[0x%08x]\n", buffer[i]);
+            i++;
+        }
+    }
+    fprintf(out, "\n");
+}
 
-    size_t pc = 0;
+void disassemble_program(i32 *buffer, i32 program_start, size_t count, FILE *out, bool clean) {
+
+    size_t pc = program_start;
+
+    if (!clean) {
+        fprintf(out, "\n=== PROGRAM SECTION (starting at offset %d) ===\n\n", program_start);
+    }
 
     while (pc < count) {
 
         i32 opcode_value = buffer[pc];
 
         if (opcode_value < 0 || opcode_value > OPCODE_COUNT) {
-            if (!clean) fprintf(out, "%" PRId32 ": [!] UNKNOWN OPCODE at %zu \n", opcode_value, pc);
+            if (!clean) fprintf(out, "0x%08zx(%zu): [!] UNKNOWN OPCODE: %d\n", pc, pc, opcode_value);
             pc++;
             continue;
         }
@@ -28,7 +68,7 @@ void disassemble(i32 *buffer, size_t count, FILE *out, bool clean) {
         }
 
         if (!clean) {
-            fprintf(out, "0x%08zx(%2zu): %-15s", pc, pc, spec->name);
+            fprintf(out, "0x%04zx(%4zu): %-15s", pc, pc, spec->name);
         } else {
             fprintf(out, "%s", spec->name);
         }
@@ -64,8 +104,8 @@ int main(int argc, char **argv) {
     bool save_to_file = false;
     const char *input_path = NULL;
 
-        for (int i = 1; i < argc; ++i) {
-            if (strcmp(argv[i], "-s") == 0) {
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "-s") == 0) {
             save_to_file = true;
         } else if (argv[i][0] != '-') {
             input_path = argv[i];
@@ -79,30 +119,57 @@ int main(int argc, char **argv) {
 
     FILE *file = fopen(input_path, "rb");
     if (!file) {
-        perror("Error oppening file");
+        perror("Error opening file");
         exit(1);
     }
 
-    i32 read_object[MAX_PROGRAM_SIZE];
+    // ========== read header ==========
+    VMFileHeader header;
+    if (fread(&header, sizeof(VMFileHeader), 1, file) != 1) {
+        fprintf(stderr, "Error: Failed to read file header.\n");
+        fclose(file);
+        exit(1);
+    }
 
-    size_t read_program_size = fread(read_object, sizeof(i32), MAX_PROGRAM_SIZE, file);
+    if (header.magic != VM_MAGIC) {
+        fprintf(stderr, "Error: Invalid file format (bad magic bytes).\n");
+        fclose(file);
+        exit(1);
+    }
+
+    // ========== load everything ==========
+    i32 read_object[MAX_PROGRAM_SIZE];
+    size_t read_size = fread(read_object, sizeof(i32), MAX_PROGRAM_SIZE, file);
     fclose(file);
 
-    printf("Read %zu instructions from %s\n\n", read_program_size, argv[1]);
-
     printf("==========================================================\n");
-    disassemble(read_object, read_program_size, stdout, false);
+    printf("File format: VM version %d\n", header.version);
+    printf("Data section size: %d bytes\n", header.data_size);
+    printf("Program starts at: offset %d\n", header.program_start);
+    printf("Total loaded: %zu i32s\n", read_size);
+    printf("==========================================================\n");
+
+    // disassemble
+    if (header.data_size > 0) {
+        disassemble_data_section(read_object, header.data_size, stdout);
+    }
+    disassemble_program(read_object, header.program_start, read_size, stdout, false);
+
     printf("==========================================================\n");
 
     if (save_to_file) {
         FILE *f_asm = fopen("disassembled.asm", "w");
         if (f_asm) {
-            disassemble(read_object, read_program_size, f_asm, true);
+            fprintf(f_asm, ".data\n");
+            if (header.data_size > 0) {
+                disassemble_data_section(read_object, header.data_size, f_asm);
+            }
+            fprintf(f_asm, "\n.text\n");
+            disassemble_program(read_object, header.program_start, read_size, f_asm, true);
             fclose(f_asm);
-            printf("\nWrote 'disassembled.asm' sucessfully.\n");
+            printf("\nWrote 'disassembled.asm' successfully.\n");
         } else {
-            perror("Error oppening file");
-            exit(1);
+            perror("Error opening output file");
         }
     }
 
