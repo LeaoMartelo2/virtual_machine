@@ -24,23 +24,56 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    i32 loaded_program[MAX_PROGRAM_SIZE];
+    // ========= read file header ===========
 
-    size_t loaded_program_size = fread(loaded_program, sizeof(i32), MAX_PROGRAM_SIZE, file);
+    VMFileHeader header;
+    if(fread(&header, sizeof(VMFileHeader), 1, file) != 1) {
+        fprintf(stderr, "Error: Failed to read file header\n");
+        fclose(file);
+        exit(1);
+    }
+
+    // validate
+    if (header.magic != VM_MAGIC) {
+        fprintf(stderr, "Error: invalid file format (bad magic bytes)\n");
+        fclose(file);
+        exit(1);
+    }
+
+    if (header.version != VM_VERSION) {
+        fprintf(stderr, "ROM version might be incompatible with interpreter version (Expected %d, got %d)\n", VM_VERSION, header.version);
+    }
+
+    // ============ load it in to program array =============
+
+    i32 loaded_program[MAX_PROGRAM_SIZE];
+    size_t total_loaded = fread(loaded_program, sizeof(i32), MAX_STACK_SIZE, file);
     fclose(file);
+    
+    // ========= initialize vm ==============
 
     VM vm = {};
 
     memcpy(vm.program, loaded_program, sizeof(loaded_program));
 
-    vm.program_size = (i32)loaded_program_size;
+    vm.program_size = (i32)total_loaded;
+    vm.data_offset = header.program_start;
+    vm.data_size = header.data_size;
+
+    vm.program_counter = header.program_start;
 
     vm.halted = false;
     vm.verbose = false;
     vm.stack_head = 0;
     memset(vm.stack, (i32)0, sizeof(vm.stack));
+    memset(vm.registers, (i32)0, sizeof(vm.registers));
+    vm.return_address_head = 0;
 
     printf("==== VM INIT ===\n");
+    printf("Data section: 0x%x bytes at offset %d\n", vm.data_size, vm.data_offset);
+    printf("Program starts at: %d\n", vm.program_counter);
+    printf("Total size: %d\n", vm.program_size);
+
 
     while (!vm.halted) {
 
