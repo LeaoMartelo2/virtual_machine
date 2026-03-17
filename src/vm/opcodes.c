@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 void vm_verbose_(VM *vm, const char *format, ...) {
 
@@ -497,3 +498,80 @@ void ret(VM *vm) {
 
     vm->return_address_head--;
 }
+
+void syscall_(VM *vm) {
+    vm_verbose("SYSCALL: {");
+    vm->program_counter++;
+
+    i32 syscall_num = vm->registers[REG_ARG_A];
+
+    switch(syscall_num) {
+
+        case 1: { /* write(fd, buff_addr, count) */
+            i32 fd = vm->registers[REG_ARG_B];
+            i32 buff_addr = vm->registers[REG_ARG_C];
+            i32 count = vm->registers[REG_ARG_D];
+            
+            vm_verbose(" write(%d, 0x%x, %d)", fd, buff_addr, count);
+
+            if (buff_addr >= vm->data_offset && buff_addr < vm->program_size) {
+                for(i32 i = 0; i < count && buff_addr + i < vm->program_size; ++i) {
+                    char c = (char)vm->program[buff_addr + i];
+                    if(c == '\0') break;
+                    write(fd, &c, 1);
+                }
+            }
+            vm_verbose(" }\n");
+        } break;
+
+    }
+}
+
+void strlen_(VM *vm) {
+    vm_verbose("STRLEN: {");
+    vm->program_counter++;
+
+    i32 buff_addr = vm->program[vm->program_counter];
+    vm_verbose(" buff_addr=%d", buff_addr);
+    vm->program_counter++;
+
+    i32 dest_reg = vm->program[vm->program_counter];
+    vm_verbose(" -> $%d", dest_reg);
+
+    i32 len = 0;
+    if (buff_addr >= vm->data_offset && buff_addr < vm->program_size) {
+        while ( buff_addr + len < vm->program_size && vm->program[buff_addr + len] != 0 ) {
+            len++;
+        }
+    }
+    vm->registers[dest_reg] = len;
+    vm_verbose(" (length=%d) }\n", len);
+    vm->program_counter++;
+}
+
+void print_char(VM *vm) {
+    vm_verbose("PRINT_CHAR: {");
+    vm->program_counter++;
+
+    i32 reg = vm->program[vm->program_counter];
+    i32 value = vm->registers[reg];
+
+    printf("%c", (char)value);
+    vm_verbose(" $%d='%c' } \n", reg, (char)value);
+
+    vm->program_counter++;
+}
+
+void print_int(VM *vm) {
+    vm_verbose("PRINT_INT: {");
+    vm->program_counter++;
+
+    i32 reg = vm->program[vm->program_counter];
+    i32 value = vm->registers[reg];
+
+    printf("%c", (char)value);
+    vm_verbose(" $%d='%c' } \n", reg, value);
+
+    vm->program_counter++;
+}
+

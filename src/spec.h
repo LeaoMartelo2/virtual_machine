@@ -8,6 +8,9 @@
 #define MAX_PROGRAM_SIZE 32767
 #define MAX_STACK_SIZE 256
 
+#define BINARY_MAGIC 0x4C65616F /* Leao */
+#define VM_VERSION 1
+
 typedef int32_t i32;
 
 typedef enum : i32 {
@@ -70,6 +73,10 @@ typedef enum : i32 {
     VOID_POP,
     CALL,
     RET,
+    SYSCALL,
+    STRLEN,
+    PRINT_CHAR,
+    PRINT_INT,
 
     OPCODE_COUNT
 } Opcodes;
@@ -94,36 +101,40 @@ typedef struct {
    Table structure: [OPCODE] [ASM NAME] [ARG COUNT] [ARGUMENT TYPES]
 */
 
-static const Instruction_spec ASSEMBLY_TABLE[] = {
-    [NO_OP]          =  { "no_op", 0,          { ARG_NONE}},
-    [HALT]           =  { "halt", 0,           { ARG_NONE}},
-    [STATE_DUMP]     =  { "state_dump", 0,     { ARG_NONE}},
-    [REGISTER_DUMP]  =  { "register_dump", 2,  { ARG_REG, ARG_REG}},
-    [PROGRAM_DUMP]   =  { "program_dump", 0,   { ARG_NONE}},
-    [STACK_DUMP]     =  { "stack_dump", 0,     { ARG_NONE}},
-    [TOGGLE_VERBOSE] =  { "toggle_verbose", 1, { ARG_VAL}},
-    [MOV]            =  { "mov", 2,            { ARG_VAL, ARG_REG}},
-    [LD]             =  { "ld", 2,             { ARG_REG, ARG_REG}},
-    [INC]            =  { "inc", 1,            { ARG_REG}},
-    [DEC]            =  { "dec", 1,            { ARG_REG}},
-    [STO_PC]         =  { "sto_pc", 1,         { ARG_REG}},
-    [CMP]            =  { "cmp", 2,            { ARG_REG, ARG_REG}},
-    [JMP]            =  { "jmp", 1,            { ARG_VAL}},
-    [JE]             =  { "je", 1,             { ARG_VAL}},
-    [JNE]            =  { "jne", 1,            { ARG_VAL}},
-    [JGE]            =  { "jge", 1,            { ARG_VAL}},
-    [JLE]            =  { "jle", 1,            { ARG_VAL}},
-    [ADD]            =  { "add", 2,            { ARG_REG, ARG_REG}},
-    [SUB]            =  { "sub", 2,            { ARG_REG, ARG_REG}},
-    [MUL]            =  { "mul", 2,            { ARG_REG, ARG_REG}},
-    [DIV]            =  { "div", 2,            { ARG_REG, ARG_REG}},
-    [MOD]            =  { "mod", 2,            { ARG_REG, ARG_REG}},
-    [PUSH]           =  { "push", 1,           { ARG_REG}},
-    [I_PUSH]         =  { "i_push", 1,         { ARG_VAL}},
-    [POP]            =  { "pop", 1,            { ARG_REG}},
-    [VOID_POP]       =  { "void_pop", 0,       { ARG_NONE}},
-    [CALL]           =  { "call", 1,           { ARG_VAL}},
-    [RET]            =  { "ret", 0,            { ARG_NONE}},
+static const Instruction_spec ASSEMBLY_TABLE[] =  {
+[NO_OP]                                        =  { "no_op", 0,          { ARG_NONE}},
+[HALT]                                         =  { "halt", 0,           { ARG_NONE}},
+[STATE_DUMP]                                   =  { "state_dump", 0,     { ARG_NONE}},
+[REGISTER_DUMP]                                =  { "register_dump", 2,  { ARG_REG, ARG_REG}},
+[PROGRAM_DUMP]                                 =  { "program_dump", 0,   { ARG_NONE}},
+[STACK_DUMP]                                   =  { "stack_dump", 0,     { ARG_NONE}},
+[TOGGLE_VERBOSE]                               =  { "toggle_verbose", 1, { ARG_VAL}},
+[MOV]                                          =  { "mov", 2,            { ARG_VAL, ARG_REG}},
+[LD]                                           =  { "ld", 2,             { ARG_REG, ARG_REG}},
+[INC]                                          =  { "inc", 1,            { ARG_REG}},
+[DEC]                                          =  { "dec", 1,            { ARG_REG}},
+[STO_PC]                                       =  { "sto_pc", 1,         { ARG_REG}},
+[CMP]                                          =  { "cmp", 2,            { ARG_REG, ARG_REG}},
+[JMP]                                          =  { "jmp", 1,            { ARG_VAL}},
+[JE]                                           =  { "je", 1,             { ARG_VAL}},
+[JNE]                                          =  { "jne", 1,            { ARG_VAL}},
+[JGE]                                          =  { "jge", 1,            { ARG_VAL}},
+[JLE]                                          =  { "jle", 1,            { ARG_VAL}},
+[ADD]                                          =  { "add", 2,            { ARG_REG, ARG_REG}},
+[SUB]                                          =  { "sub", 2,            { ARG_REG, ARG_REG}},
+[MUL]                                          =  { "mul", 2,            { ARG_REG, ARG_REG}},
+[DIV]                                          =  { "div", 2,            { ARG_REG, ARG_REG}},
+[MOD]                                          =  { "mod", 2,            { ARG_REG, ARG_REG}},
+[PUSH]                                         =  { "push", 1,           { ARG_REG}},
+[I_PUSH]                                       =  { "i_push", 1,         { ARG_VAL}},
+[POP]                                          =  { "pop", 1,            { ARG_REG}},
+[VOID_POP]                                     =  { "void_pop", 0,       { ARG_NONE}},
+[CALL]                                         =  { "call", 1,           { ARG_VAL}},
+[RET]                                          =  { "ret", 0,            { ARG_NONE}},
+[SYSCALL]                                      =  { "syscall", 0,        { ARG_NONE}},
+[STRLEN]                                       =  { "strlen", 2,         { ARG_VAL, ARG_REG}},
+[PRINT_CHAR]                                   =  { "print_char", 1,     { ARG_REG}},
+[PRINT_INT]                                    =  { "print_int", 1,      { ARG_REG}},
 };
 
 // :Tabularize /[={]
@@ -153,9 +164,19 @@ static const Named_register NAMED_REGISTERS[] = {
 // clang-format on
 
 typedef struct {
+    i32 magic;
+    i32 version;
+    i32 data_size;
+    i32 program_start;
+} VMFileHeader;
+
+typedef struct {
     i32 program_counter;
     i32 program[MAX_PROGRAM_SIZE];
     i32 program_size;
+
+    i32 data_offset;
+    i32 data_size;
 
     i32 registers[REG_COUNT];
     i32 cond_flag;

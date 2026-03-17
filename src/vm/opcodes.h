@@ -32,5 +32,9 @@ void pop(VM *vm);
 void void_pop(VM *vm);
 void call(VM *vm);
 void ret(VM *vm);
+void syscall_(VM *vm);
+void strlen_(VM *vm);
+void print_char(VM *vm);
+void print_int(VM *vm);
 
 #endif /* OPCODES_H */

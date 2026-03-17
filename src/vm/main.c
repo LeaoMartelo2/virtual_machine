@@ -162,6 +162,22 @@ int main(int argc, char **argv) {
             ret(&vm);
         } break;
 
+        case SYSCALL: {
+            syscall_(&vm);
+        } break;
+
+        case STRLEN: {
+            strlen_(&vm);
+        } break;
+
+        case PRINT_CHAR: {
+            print_char(&vm);
+        } break;
+
+        case PRINT_INT: {
+            print_int(&vm);
+        } break;
+
         default: {
             printf("BAD OPCODE, HALTING\n");
             vm.halted = true;
