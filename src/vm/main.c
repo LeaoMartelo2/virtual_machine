@@ -70,9 +70,11 @@ int main(int argc, char **argv) {
     vm.return_address_head = 0;
 
     printf("==== VM INIT ===\n");
+    /*
     printf("Data section: 0x%x bytes at offset %d\n", vm.data_size, vm.data_offset);
     printf("Program starts at: %d\n", vm.program_counter);
     printf("Total size: %d\n", vm.program_size);
+    */
 
 
     while (!vm.halted) {

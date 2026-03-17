@@ -66,6 +66,63 @@ typedef struct {
     bool is_data_label;
 } Label;
 
+// custom tokenizer that respects quoted strings
+// returns next token, or NULL if end of string
+// handles quoted strings as single tokens
+typedef struct {
+    const char *buffer;
+    size_t pos;
+} Tokenizer;
+
+Tokenizer tokenizer_create(const char *buffer) {
+    Tokenizer t = {buffer, 0};
+    return t;
+}
+
+char *tokenizer_next(Tokenizer *t) {
+    // skip whitespace and delimiters
+    while (t->buffer[t->pos] != '\0' && 
+           (t->buffer[t->pos] == ' ' || t->buffer[t->pos] == '\t' || 
+            t->buffer[t->pos] == '\n' || t->buffer[t->pos] == '\r' || 
+            t->buffer[t->pos] == ',')) {
+        t->pos++;
+    }
+    
+    if (t->buffer[t->pos] == '\0') {
+        return NULL;
+    }
+    
+    size_t start = t->pos;
+    
+    // check if this is a quoted string
+    if (t->buffer[t->pos] == '"') {
+        t->pos++;  // skip opening quote
+        while (t->buffer[t->pos] != '\0' && t->buffer[t->pos] != '"') {
+            t->pos++;
+        }
+        if (t->buffer[t->pos] == '"') {
+            t->pos++;  // skip closing quote
+        }
+    } else {
+        // regular token read until whitespace or delimiter
+        while (t->buffer[t->pos] != '\0' && 
+               t->buffer[t->pos] != ' ' && t->buffer[t->pos] != '\t' && 
+               t->buffer[t->pos] != '\n' && t->buffer[t->pos] != '\r' && 
+               t->buffer[t->pos] != ',') {
+            t->pos++;
+        }
+    }
+    
+    size_t len = t->pos - start;
+    char *token = malloc(len + 1);
+    if (token) {
+        memcpy(token, t->buffer + start, len);
+        token[len] = '\0';
+    }
+    
+    return token;
+}
+
 int main(int argc, char **argv) {
 
     char *input_path = NULL;
@@ -121,8 +178,6 @@ int main(int argc, char **argv) {
     buffer[file_size] = '\0';
     fclose(file);
 
-    const char *tokenizer_split = " ,\t\n\r";
-    char *token;
     Label symbol_table[1024];
     int label_count = 0;
     i32 program_buffer[MAX_PROGRAM_SIZE];
@@ -135,36 +190,38 @@ int main(int argc, char **argv) {
     size_t max_limit = 256;
     bool in_data_section = false;
 
-    char *buffer_copy = strdup_vm(buffer);
-
     // ========== PASS 1: build symbol table and detect sections ==========
-    token = strtok(buffer_copy, tokenizer_split);
+    Tokenizer t1 = tokenizer_create(buffer);
+    char *token;
 
-    while (token != NULL) {
+    while ((token = tokenizer_next(&t1)) != NULL) {
 
         if (token[0] == '#') {
-            token = strtok(NULL, "\n");
-            token = strtok(NULL, tokenizer_split);
+            free(token);
+            // skip until end of line
+            while (t1.buffer[t1.pos] != '\0' && t1.buffer[t1.pos] != '\n') {
+                t1.pos++;
+            }
             continue;
         }
 
         // check for section markers
         if (strcmp(token, ".data") == 0) {
             in_data_section = true;
-            token = strtok(NULL, tokenizer_split);
+            free(token);
             continue;
         }
 
         if (strcmp(token, ".text") == 0) {
             in_data_section = false;
-            token = strtok(NULL, tokenizer_split);
+            free(token);
             continue;
         }
 
         size_t len = strnlen(token, max_limit);
 
-        // handle labels
-        if (len > 0 && token[len - 1] == ':') {
+        // handle labels (must be length > 1 and end with ':')
+        if (len > 1 && token[len - 1] == ':') {
             char label_name[256];
             strncpy(label_name, token, len - 1);
             label_name[len - 1] = '\0';
@@ -178,112 +235,115 @@ int main(int argc, char **argv) {
                 symbol_table[label_count].address = (i32)virtual_program_pos;
             }
             label_count++;
+            free(token);
+        } else if (!in_data_section) {
+            // check if it's an opcode (not in data section)
+            //bool found = false;
+            for (i32 i = 0; i < OPCODE_COUNT; ++i) {
+                if (strcmp(token, ASSEMBLY_TABLE[i].name) == 0) {
+                    virtual_program_pos += 1;  // opcode itself
+                    virtual_program_pos += ASSEMBLY_TABLE[i].arg_count;  // arguments
+
+                    // skip the arguments in tokenization
+                    for (int j = 0; j < ASSEMBLY_TABLE[i].arg_count; ++j) {
+                        char *arg = tokenizer_next(&t1);
+                        free(arg);
+                    }
+             //       found = true;
+                    break;
+                }
+            }
+            free(token);
         } else if (in_data_section) {
-            // process data section - parse strings
+            // in data section but not a label should be the string value
             if (token[0] == '"') {
-                // count characters until closing quote
-                int i = 1;
+                // we found a string count its length (without quotes)
+                size_t i = 1;
                 while (token[i] != '"' && token[i] != '\0') {
                     virtual_data_pos++;
                     i++;
                 }
                 virtual_data_pos++;  // for null terminator
             }
-        } else {
-            // check if its an opcode (not in data section)
-            for (i32 i = 0; i < OPCODE_COUNT; ++i) {
-                if (strcmp(token, ASSEMBLY_TABLE[i].name) == 0) {
-                    virtual_program_pos += 1;  // opcode itself
-                    virtual_program_pos += ASSEMBLY_TABLE[i].arg_count;  // arguments
-
-                    // Skip the arguments in tokenization
-                    for (int j = 0; j < ASSEMBLY_TABLE[i].arg_count; ++j) {
-                        strtok(NULL, tokenizer_split);
-                    }
-                    break;
-                }
-            }
+            free(token);
         }
-
-        token = strtok(NULL, tokenizer_split);
     }
 
     i32 data_size = (i32)virtual_data_pos;
 
     // ========== PASS 2: Load data section ==========
     in_data_section = false;
-    token = strtok(buffer, tokenizer_split);
+    Tokenizer t2 = tokenizer_create(buffer);
 
-    while (token != NULL) {
+    while ((token = tokenizer_next(&t2)) != NULL) {
         if (token[0] == '#') {
-            token = strtok(NULL, "\n");
-            token = strtok(NULL, tokenizer_split);
+            free(token);
+            while (t2.buffer[t2.pos] != '\0' && t2.buffer[t2.pos] != '\n') {
+                t2.pos++;
+            }
             continue;
         }
 
         if (strcmp(token, ".data") == 0) {
             in_data_section = true;
-            token = strtok(NULL, tokenizer_split);
+            free(token);
             continue;
         }
 
         if (strcmp(token, ".text") == 0) {
             in_data_section = false;
-            token = strtok(NULL, tokenizer_split);
+            free(token);
             continue;
         }
 
         size_t len = strnlen(token, max_limit);
 
-        // skip labels in data section
-        if (in_data_section && len > 0 && token[len - 1] == ':') {
-            token = strtok(NULL, tokenizer_split);
+        // skip labels in data section (length > 1 and ends with ':')
+        if (in_data_section && len > 1 && token[len - 1] == ':') {
+            free(token);
             continue;
         }
 
         // process string data
         if (in_data_section && token[0] == '"') {
-            // parse and store string as ASCII values
-            int i = 1;
+            // store string as ASCII values (excluding quotes)
+            size_t i = 1;
             while (token[i] != '"' && token[i] != '\0') {
                 data_buffer[data_head++] = (i32)token[i];
                 i++;
             }
+            
             data_buffer[data_head++] = 0;  // null terminator
-            token = strtok(NULL, tokenizer_split);
+            free(token);
             continue;
         }
 
-        if (!in_data_section) {
-            token = strtok(NULL, tokenizer_split);
-            continue;
-        }
-
-        token = strtok(NULL, tokenizer_split);
+        free(token);
     }
 
     // ========== PASS 3: Generate program bytecode ==========
     in_data_section = false;
-    token = strtok(buffer, tokenizer_split);
+    Tokenizer t3 = tokenizer_create(buffer);
 
-    while (token != NULL) {
-        // skip comments
+    while ((token = tokenizer_next(&t3)) != NULL) {
         if (token[0] == '#') {
-            token = strtok(NULL, "\n");
-            token = strtok(NULL, tokenizer_split);
+            free(token);
+            while (t3.buffer[t3.pos] != '\0' && t3.buffer[t3.pos] != '\n') {
+                t3.pos++;
+            }
             continue;
         }
 
-        // handle section markers FIRST - before anything else
+        // handle section markers FIRST before anything else
         if (strcmp(token, ".data") == 0) {
             in_data_section = true;
-            token = strtok(NULL, tokenizer_split);
+            free(token);
             continue;
         }
 
         if (strcmp(token, ".text") == 0) {
             in_data_section = false;
-            token = strtok(NULL, tokenizer_split);
+            free(token);
             continue;
         }
 
@@ -291,24 +351,21 @@ int main(int argc, char **argv) {
         if (in_data_section) {
             size_t len = strnlen(token, max_limit);
             
-            // skip label and string pair
-            if (len > 0 && token[len - 1] == ':') {
-                token = strtok(NULL, tokenizer_split);
-                if (token != NULL && token[0] == '"') {
-                    token = strtok(NULL, tokenizer_split);
-                }
+            // skip label (length > 1, ends with ':') and its string value
+            if (len > 1 && token[len - 1] == ':') {
+                free(token);
                 continue;
             }
             
-            token = strtok(NULL, tokenizer_split);
+            free(token);
             continue;
         }
 
         size_t len = strnlen(token, max_limit);
 
-        // skip labels (they end with ':')
-        if (len > 0 && token[len - 1] == ':') {
-            token = strtok(NULL, tokenizer_split);
+        // skip program labels (length > 1, ends with ':')
+        if (len > 1 && token[len - 1] == ':') {
+            free(token);
             continue;
         }
 
@@ -323,18 +380,18 @@ int main(int argc, char **argv) {
                 const char *current_instr_name = ASSEMBLY_TABLE[i].name;
 
                 for (int j = 0; j < ASSEMBLY_TABLE[i].arg_count; ++j) {
-                    token = strtok(NULL, tokenizer_split);
+                    char *arg_token = tokenizer_next(&t3);
 
-                    if (token == NULL) {
+                    if (arg_token == NULL) {
                         fprintf(stderr, "Error: missing argument for '%s'\n", current_instr_name);
                         exit(1);
                     }
 
                     // registers
                     if (ASSEMBLY_TABLE[i].arg_types[j] == ARG_REG) {
-                        if (token[0] == '%' || token[0] == '$') {
+                        if (arg_token[0] == '%' || arg_token[0] == '$') {
 
-                            const char *reg_name = token + 1;  // skip prefix
+                            const char *reg_name = arg_token + 1;  // skip prefix
 
                             char *endptr;
                             int reg_idx = (int)strtol(reg_name, &endptr, 10);
@@ -367,20 +424,20 @@ int main(int argc, char **argv) {
                             }
 
                         } else {
-                            fprintf(stderr, "Error: expected '$' for register, found '%s'\n", token);
+                            fprintf(stderr, "Error: expected '$' for register, found '%s'\n", arg_token);
                             exit(1);
                         }
                     }
                     // values or labels
                     else if (ASSEMBLY_TABLE[i].arg_types[j] == ARG_VAL) {
 
-                        // labels start with '.'
-                        if (token[0] == '.') {
-                            const char *label_to_find = token + 1;
+                        // program labels start with '.'
+                        if (arg_token[0] == '.') {
+                            const char *label_to_find = arg_token + 1;
                             bool label_found = false;
 
                             for (int l = 0; l < label_count; ++l) {
-                                if (strcmp(label_to_find, symbol_table[l].name) == 0) {
+                                if (strcmp(label_to_find, symbol_table[l].name) == 0 && !symbol_table[l].is_data_label) {
                                     program_buffer[program_head++] = symbol_table[l].address;
                                     label_found = true;
                                     break;
@@ -392,19 +449,39 @@ int main(int argc, char **argv) {
                                 exit(1);
                             }
                         }
+                        // data references start with '@'
+                        else if (arg_token[0] == '@') {
+                            const char *label_to_find = arg_token + 1;
+                            bool label_found = false;
+
+                            for (int l = 0; l < label_count; ++l) {
+                                if (strcmp(label_to_find, symbol_table[l].name) == 0 && symbol_table[l].is_data_label) {
+                                    program_buffer[program_head++] = symbol_table[l].address;
+                                    label_found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!label_found) {
+                                fprintf(stderr, "Error: Data label '%s' not defined.\n", label_to_find);
+                                exit(1);
+                            }
+                        }
                         // literal number
                         else {
                             char *endptr;
-                            i32 val = (i32)strtol(token, &endptr, 10);
+                            i32 val = (i32)strtol(arg_token, &endptr, 10);
 
                             if (*endptr == '\0') {
                                 program_buffer[program_head++] = val;
                             } else {
-                                fprintf(stderr, "Error: Expected numeric value or .label, found '%s'\n", token);
+                                fprintf(stderr, "Error: Expected numeric value, .label, or @data_label, found '%s'\n", arg_token);
                                 exit(1);
                             }
                         }
                     }
+                    
+                    free(arg_token);
                 }
                 break;
             }
@@ -415,7 +492,7 @@ int main(int argc, char **argv) {
             exit(1);
         }
 
-        token = strtok(NULL, tokenizer_split);
+        free(token);
     }
 
     // ========== Write output file with header ==========
@@ -439,13 +516,15 @@ int main(int argc, char **argv) {
 
     fclose(output_file);
     free(buffer);
-    free(buffer_copy);
 
+    /*
     printf("Assembled successfully!\n");
     printf("  Data size: %d bytes (%zu i32s)\n", data_size, data_head);
     printf("  Program size: %zu i32s\n", program_head);
     printf("  Total size: %zu i32s\n", data_head + program_head);
     printf("  Output: %s\n", output_path);
+
+    */
 
     if (run_flag) run_after_compile(output_path);
 

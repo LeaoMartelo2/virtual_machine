@@ -514,12 +514,15 @@ void syscall_(VM *vm) {
             
             vm_verbose(" write(%d, 0x%x, %d)", fd, buff_addr, count);
 
-            if (buff_addr >= vm->data_offset && buff_addr < vm->program_size) {
+
+            if (buff_addr <= vm->data_offset && buff_addr < vm->program_size) {
                 for(i32 i = 0; i < count && buff_addr + i < vm->program_size; ++i) {
                     char c = (char)vm->program[buff_addr + i];
                     if(c == '\0') break;
                     write(fd, &c, 1);
                 }
+
+                fsync(fd);
             }
             vm_verbose(" }\n");
         } break;
