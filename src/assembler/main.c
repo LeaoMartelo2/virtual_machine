@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
     }
 
     i32 data_size = (i32)virtual_data_pos;
-    i32 program_start = data_head;  // data ends where program starts in output
+    //i32 program_start = data_head;  // data ends where program starts in output
 
     // ========== PASS 2: load data section ==========
     in_data_section = false;
