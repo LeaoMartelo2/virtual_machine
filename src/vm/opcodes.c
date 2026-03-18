@@ -573,8 +573,39 @@ void print_int(VM *vm) {
     i32 value = vm->registers[reg];
 
     printf("%d", value);
-    vm_verbose(" $%d='%d } \n", reg, value);
+    vm_verbose(" $%d=='%d } \n", reg, value);
 
+    vm->program_counter++;
+}
+
+void iprint_char(VM *vm) {
+    vm_verbose("IPRINT_CHAR: {");
+    vm->program_counter++;
+
+    i32 value = vm->program[vm->program_counter];
+
+    printf("%c",(char)value);
+
+    vm_verbose(" %d=='%c' }\n", value, (char)value);
+
+    vm->program_counter++;
+}
+
+void iprint_int(VM *vm) {
+    vm_verbose("IPRINT_INT: {");
+    vm->program_counter++;
+
+    i32 value = vm->program[vm->program_counter];
+
+    printf("%d",value);
+
+    vm_verbose(" program[%d] == %d }\n", vm->program_counter, value);
+
+    vm->program_counter++;
+}
+
+void line_br(VM *vm) {
+    putchar('\n');
     vm->program_counter++;
 }
 
@@ -589,7 +620,6 @@ void ldo(VM *vm) {
     i32 dest_reg = vm->program[vm->program_counter];
     vm_verbose(" -> $%d", dest_reg);
 
-    /*  we explicitly dont check if the address is out of bounds of the data section, so we can do some fun stuff later */
 
     i32 value = vm->program[data_addr];
     vm->registers[dest_reg] = value;
@@ -616,9 +646,6 @@ void ldxo(VM *vm) {
     vm_verbose(" -> $%d", dest_reg);
 
     i32 final_addr = base_addr + index_offset;
-
-
-    /*  we explicitly dont check if the address is out of bounds of the data section, so we can do some fun stuff later */
 
     
     i32 value = vm->program[final_addr];

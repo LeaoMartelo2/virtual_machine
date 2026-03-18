@@ -41,7 +41,7 @@ mov 10, $10                   # stores '10' in the register 10
 loop_start:                   # define a Label where the loop starts
 inc $1                        # increments the value at register 1 by 1 ($1++)
 cmp $1, $10                   # compares register 1 with register 10
-jle .loop_start               # goes to the start of the loop of the comparasion was less or equal
+jle .loop_start               # goes to the start of the loop of the comparison was less or equal
 state_dump                    # displays some information about the machine 
 halt                          # finishes machine execution and exits
 ```
@@ -95,6 +95,21 @@ Now take a look at your compiled binary code by running:
 
 Optionally add the `-s` flag to output the disassembled code to `disassembled.asm`
 
+Here is a slightly more complex example
+```asm
+toggle_verbose false
+mov write_syscall, $arg_a  # set syscall type
+mov stdout, $arg_b         # file descriptor for write syscall
+mov @msg, $arg_c           # pass the string as buffer for write syscall
+strlen @msg, $arg_d        # pass the length of the data to be written
+syscall                    # execute the syscall | write(stdout, &msg, strlen(msg))
+line_br                    # print '\n'
+halt
+
+.data
+    msg: "Hello, World!"
+```
+
 
 ## Documentation
 
@@ -131,12 +146,77 @@ Optionally add the `-s` flag to output the disassembled code to `disassembled.as
 | VOID\_POP | Pops the last item in the stack, discarding its value| 0 | void\_pop |
 | CALL | Jumps to a label and sets the return address stack | 1 | call %value/label |
 | RET | Returns by jumping to the last return address stack, pops its value | 0 | ret |
+| SYSCALL | Execute system syscall, recieves syscall type through $arg\_a, check syscall table | 0 | syscall|
+| STRLEN | Accepts data pointer / data label, counts until finding \0, stores in reg\_a | 2 | strlen @string\_data, $reg\_a|
+|PRINT\_CHAR| Prints ASCII of value of register passed to stdout | 1 | print\_char $reg\_a | 
+|PRINT\_INT| Prints value of register passed to stdout | 1 | print\_int $reg\_a |
+|IPRINT\_CHAR | Prints ASCII of imediate value passed to stdout | 1 | iprint\_char %value|
+|IPRINT\_INT | Prints imediate value passed to stdout | 1 | iprint\_int %value|
+|LINE\_BR| Prints '\n' to stdout | 0 | line\_br|
+|LDO| Load Data Offset, stores the offset of labeled data pointer to a $reg\_a |2| ldo @data\_pointer, $reg\_a |
+|LDXO| Load Data indeXed Offset, loads the value pointed by $reg\_a, offset by $reg\_b (could be 0), and stores it in $reg\_c | 3 | ldxo $reg\_a, $reg\_b, $reg\_c |
 
 
 
 - $reg = register index (Ex: $1, $2, $10)
-- %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `Label`
-- There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values for `call`
+- %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `.label` or `@data_pointer`
+- There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values for `call` or `syscall`
 
 
+### Constants
 
+|Constant| Value|
+|-|-|
+|true| 1|
+|false| 0|
+|stdin| 0|
+|stdout| 1|
+|stderr| 2|
+|write\_syscall| 1|
+
+### Bytecode rom format
+
+The ROM's bytecode format is split in 3 sections, a `Header`, `.data` section, and `program` or `.text` section.
+
+Here is a hexdump of `hello_world.bin`
+
+```txt
+[HEADER]
+00000000: |  564d 5f52  VM_R | <- Magic numbers
+00000004: |  2600 0000  &... | <- Version identifier
+00000008: |  0e00 0000  .... | <- .data section size
+0000000c: |  0e00 0000  .... | <- program start address
+[.DATA]
+00000010: |  4800 0000  H... |
+00000014: |  6500 0000  e... |
+00000018: |  6c00 0000  l... |
+0000001c: |  6c00 0000  l... |
+00000020: |  6f00 0000  o... |
+00000024: |  2c00 0000  ,... |
+00000028: |  2000 0000   ... |
+0000002c: |  5700 0000  W... |
+00000030: |  6f00 0000  o... |
+00000034: |  7200 0000  r... |
+00000038: |  6c00 0000  l... |
+0000003c: |  6400 0000  d... |
+00000040: |  2100 0000  !... |
+00000044: |  0000 0000  .... | <- Strings are null terminated
+[.TEXT]
+00000048: |  0600 0000  .... | <- program starts point here
+0000004c: |  0000 0000  .... |
+00000050: |  0700 0000  .... |
+00000054: |  0100 0000  .... |
+00000058: |  6400 0000  d... |
+0000005c: |  0700 0000  .... |
+00000060: |  0100 0000  .... |
+00000064: |  6500 0000  e... |
+00000068: |  0700 0000  .... |
+0000006c: |  0000 0000  .... |
+00000070: |  6600 0000  f... |
+00000074: |  1e00 0000  .... |
+00000078: |  0000 0000  .... |
+0000007c: |  6700 0000  g... |
+00000080: |  1d00 0000  .... |
+00000084: |  2300 0000  #... |
+00000088: |  0100 0000  .... |
+ ```

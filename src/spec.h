@@ -9,7 +9,6 @@
 #define MAX_STACK_SIZE 256
 
 #define VM_MAGIC 0x525F4D56 /* VM_R */
-#define VM_VERSION 1
 
 typedef int32_t i32;
 
@@ -28,7 +27,7 @@ typedef enum : i32 {
 
     NAMED_REGISTERS_SPLIT,
 
-    REG_ARG_A,
+    REG_ARG_A = 100,
     REG_ARG_B,
     REG_ARG_C,
     REG_ARG_D,
@@ -77,6 +76,9 @@ typedef enum : i32 {
     STRLEN,
     PRINT_CHAR,
     PRINT_INT,
+    IPRINT_CHAR,
+    IPRINT_INT,
+    LINE_BR,
     LDO,
     LDXO,
 
@@ -137,6 +139,9 @@ static const Instruction_spec ASSEMBLY_TABLE[] =  {
     [STRLEN]         =  { "strlen", 2,         { ARG_VAL, ARG_REG}},
     [PRINT_CHAR]     =  { "print_char", 1,     { ARG_REG}},
     [PRINT_INT]      =  { "print_int", 1,      { ARG_REG}},
+    [IPRINT_CHAR]    =  { "iprint_char", 1,    { ARG_VAL}},
+    [IPRINT_INT]     =  { "iprint_int", 1,     { ARG_VAL}},
+    [LINE_BR]        =  { "line_br", 0,        { ARG_NONE}},
     [LDO]            =  { "ldo", 2,            { ARG_VAL, ARG_REG}},
     [LDXO]           =  { "ldxo", 3,           { ARG_REG, ARG_REG, ARG_REG}},
 };
@@ -165,7 +170,28 @@ static const Named_register NAMED_REGISTERS[] = {
 
 #define NAMED_REGISTER_COUNT (sizeof(NAMED_REGISTERS) / sizeof(Named_register))
 
+typedef struct {
+    const char *name;
+    i32 value;
+} Constant_spec;
+
+static const Constant_spec PREDEFINED_CONSTANTS[] = {
+
+    {"true", 1},
+    {"false", 0},
+
+    {"stdin", 0},
+    {"stdout", 1},
+    {"stderr", 2},
+
+    {"write_syscall", 1},
+};
+
+#define CONSTANT_COUNT (sizeof(PREDEFINED_CONSTANTS) / sizeof(Constant_spec))
+
 // clang-format on
+
+#define VM_VERSION OPCODE_COUNT
 
 typedef struct {
     i32 magic;
