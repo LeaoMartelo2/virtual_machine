@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     
     while (!vm.halted) {
 
-        switch (vm.program[vm.program_counter]) {
+        switch ((Opcodes)vm.program[vm.program_counter]) {
 
         case NO_OP: {
             no_op(&vm);
@@ -208,6 +208,18 @@ int main(int argc, char **argv) {
             print_int(&vm);
         } break;
 
+        case IPRINT_CHAR: {
+            iprint_char(&vm);
+        } break;
+
+        case IPRINT_INT: {
+            iprint_int(&vm);
+        } break;
+
+        case LINE_BR: {
+            line_br(&vm);
+        } break;
+
         case LDO: {
             ldo(&vm);
         } break;
@@ -215,7 +227,8 @@ int main(int argc, char **argv) {
         case LDXO: {
             ldxo(&vm);
         } break;
-
+        
+        case OPCODE_COUNT: 
         default: {
             printf("BAD OPCODE, HALTING\n");
             vm.halted = true;

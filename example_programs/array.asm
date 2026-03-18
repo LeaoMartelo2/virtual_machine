@@ -1,5 +1,4 @@
-toggle_verbose 0
-mov 10, $10  # '\n'
+toggle_verbose false
 mov 8, $8
 
 mov @scores, $1
@@ -11,7 +10,7 @@ loop_start:
 
     ldxo $1, $2, $3
     print_int $3 
-    print_char $10
+    line_br
     
     inc $2
     jmp .loop_start

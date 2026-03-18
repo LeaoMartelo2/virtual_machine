@@ -505,8 +505,23 @@ int main(int argc, char **argv) {
                             if (*endptr == '\0') {
                                 program_buffer[program_head++] = val;
                             } else {
-                                fprintf(stderr, "Error: Expected numeric value, .label, or @data_label, found '%s'\n", arg_token);
-                                exit(1);
+
+                                bool const_found = false;
+
+                                for (size_t c = 0; c < CONSTANT_COUNT; ++c) {
+                                    if (strcmp(arg_token, PREDEFINED_CONSTANTS[c].name) == 0) {
+                                        program_buffer[program_head++] = PREDEFINED_CONSTANTS[c].value;
+                                        const_found = true;
+                                        break;
+                                    }
+                                }
+
+                                if(!const_found) {
+                                    fprintf(stderr, "Error: Expected numeric value, label or constant, found  '%s'\n", arg_token);
+                                    exit(1);
+                                }
+
+
                             }
                         }
                     }

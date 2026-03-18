@@ -131,12 +131,31 @@ Optionally add the `-s` flag to output the disassembled code to `disassembled.as
 | VOID\_POP | Pops the last item in the stack, discarding its value| 0 | void\_pop |
 | CALL | Jumps to a label and sets the return address stack | 1 | call %value/label |
 | RET | Returns by jumping to the last return address stack, pops its value | 0 | ret |
+| SYSCALL | Execute system syscall, recieves syscall type through $arg\_a, check syscall table | 0 | syscall|
+| STRLEN | Accepts data pointer / data label, counts until finding \0, stores in reg\_a | 2 | strlen @string\_data, $reg\_a|
+|PRINT\_CHAR| Prints ASCII of value of register passed to stdout | 1 | print\_char $reg\_a | 
+|PRINT\_INT| Prints value of register passed to stdout | 1 | print\_int $reg\_a |
+|IPRINT\_CHAR | Prints ASCII of imediate value passed to stdout | 1 | iprint\_char %value|
+|IPRINT\_INT | Prints imediate value passed to stdout | 1 | iprint\_int %value|
+|LINE\_BR| Prints '\n' to stdout | 0 | line\_br|
+|LDO| Load Data Offset, stores the offset of labeled data pointer to a $reg\_a |2| ldo @data\_pointer, $reg\_a |
+|LDXO| Load Data indeXed Offset, loads the value pointed by $reg\_a, offset by $reg\_b (could be 0), and stores it in $reg\_c | 3 | ldxo $reg\_a, $reg\_b, $reg\_c |
 
 
 
 - $reg = register index (Ex: $1, $2, $10)
-- %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `Label`
-- There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values for `call`
+- %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `.label` or `@data_pointer`
+- There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values for `call` or `syscall`
 
 
+### Constants
+
+|Constant| Value|
+|-|-|
+|true| 1|
+|false| 0|
+|stdin| 0|
+|stdout| 1|
+|stderr| 2|
+|write\_syscall| 1|
 

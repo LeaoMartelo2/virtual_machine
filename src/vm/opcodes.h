@@ -36,6 +36,9 @@ void syscall_(VM *vm);
 void strlen_(VM *vm);
 void print_char(VM *vm);
 void print_int(VM *vm);
+void iprint_char(VM *vm);
+void iprint_int(VM *vm);
+void line_br(VM *vm);
 void ldo(VM *vm);
 void ldxo(VM *vm);
 
