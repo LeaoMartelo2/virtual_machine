@@ -16,7 +16,7 @@ void disassemble_data_section(i32 *buffer, i32 data_size, FILE *out, bool clean)
     while (i < data_size) {
 
         if(clean) { fprintf(out, "# "); }
-        fprintf(out, "0x%04x(%4d): ", i, i);
+        fprintf(out, "\n0x%04x(%4d): ", i, i);
         if(clean) { fprintf(out, "\n"); }
 
         

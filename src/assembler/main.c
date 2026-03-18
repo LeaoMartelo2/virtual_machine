@@ -278,6 +278,7 @@ int main(int argc, char **argv) {
 
     i32 data_size = (i32)virtual_data_pos;
 
+    
     // ========== PASS 2: Load data section ==========
     in_data_section = false;
     Tokenizer t2 = tokenizer_create(buffer);
@@ -340,6 +341,15 @@ int main(int argc, char **argv) {
 
         free(token);
     }
+
+    // ===========  ADJUST LAVEL ADDRESSES FOR DATA OFFSET =========
+
+    for(int i = 0; i < label_count; ++i) {
+        if(!symbol_table[i].is_data_label) {
+            symbol_table[i].address += (i32)data_size;
+        }
+    }
+
 
     // ========== PASS 3: Generate program bytecode ==========
     in_data_section = false;

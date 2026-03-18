@@ -589,13 +589,7 @@ void ldo(VM *vm) {
     i32 dest_reg = vm->program[vm->program_counter];
     vm_verbose(" -> $%d", dest_reg);
 
-    /*
-    if(data_addr < vm->data_offset || data_addr >= vm->data_offset + vm->data_size) {
-        fprintf(stderr, "\nError: LDO address 0x%x out of bounds (data section: 0x%x - 0x%x)\n",
-                data_addr, vm->data_offset, vm->data_offset + vm->data_size - 1);
-        exit(1);
-    }
-    */
+    /*  we explicitly dont check if the address is out of bounds of the data section, so we can do some fun stuff later */
 
     i32 value = vm->program[data_addr];
     vm->registers[dest_reg] = value;
@@ -623,12 +617,10 @@ void ldxo(VM *vm) {
 
     i32 final_addr = base_addr + index_offset;
 
-    if (final_addr < vm->data_offset || final_addr >= vm->data_offset + vm->data_size) {
-        fprintf(stderr, "\nError: LDXO address 0x%x (0x%x + %d) out of bounds (data section: 0x%x - 0x%x)\n",
-                final_addr, base_addr, index_offset, vm->data_offset, vm->data_offset + vm->data_size - 1);
-        exit(1);
-    }
 
+    /*  we explicitly dont check if the address is out of bounds of the data section, so we can do some fun stuff later */
+
+    
     i32 value = vm->program[final_addr];
     vm->registers[dest_reg] = value;
     vm_verbose(" (value=%d) }\n");
