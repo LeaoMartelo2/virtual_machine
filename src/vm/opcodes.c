@@ -572,8 +572,8 @@ void print_int(VM *vm) {
     i32 reg = vm->program[vm->program_counter];
     i32 value = vm->registers[reg];
 
-    printf("%c", (char)value);
-    vm_verbose(" $%d='%c' } \n", reg, value);
+    printf("%d", value);
+    vm_verbose(" $%d='%d } \n", reg, value);
 
     vm->program_counter++;
 }
