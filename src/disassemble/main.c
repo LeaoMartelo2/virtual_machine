@@ -16,39 +16,17 @@ void disassemble_data_section(i32 *buffer, i32 data_size, FILE *out, bool clean)
     while (i < data_size) {
 
         if(clean) { fprintf(out, "# "); }
-        fprintf(out, "0x%04x(%4d): ", i, i);
+        if (!clean)fprintf(out, "0x%04x(%4d): ", i, i);
+        if (clean) fprintf(out, "0x%04x(%4d): ", i, i);
         if(clean) { fprintf(out, "\n"); }
 
         
-        // try to print as printable ASCII string
-        int string_len = 0;
-
-        if(clean) { fprintf(out, "\""); }
-
-        while (i + string_len < data_size && buffer[i + string_len] != 0) {
-            i32 c = buffer[i + string_len];
-            if (c >= 32 && c < 127) {
-                fprintf(out, "%c", (char)c);
-                string_len++;
-            } else {
-                break;
-            }
+        fprintf(out, "%d", buffer[i]);
+        if(buffer[i] >= 32 && buffer[i] < 127) { // printable ascii range
+            fprintf(out, " # '%c'\n", (char)buffer[i]);
         }
+        i++;
 
-
-        if(clean) { fprintf(out, "\"\n"); }
-        
-        if (string_len > 0) {
-            i += string_len;
-            if (i < data_size && buffer[i] == 0) {
-                if(!clean) fprintf(out, "\\0\n");
-                i++;
-            }
-        } else {
-            // print as hex if not ASCII
-            fprintf(out, "[0x%08x]\n", buffer[i]);
-            i++;
-        }
     }
     fprintf(out, "\n");
 }

@@ -238,7 +238,6 @@ int main(int argc, char **argv) {
             free(token);
         } else if (!in_data_section) {
             // check if it's an opcode (not in data section)
-            //bool found = false;
             for (i32 i = 0; i < OPCODE_COUNT; ++i) {
                 if (strcmp(token, ASSEMBLY_TABLE[i].name) == 0) {
                     virtual_program_pos += 1;  // opcode itself
@@ -249,13 +248,12 @@ int main(int argc, char **argv) {
                         char *arg = tokenizer_next(&t1);
                         free(arg);
                     }
-             //       found = true;
                     break;
                 }
             }
             free(token);
         } else if (in_data_section) {
-            // in data section but not a label should be the string value
+            // in data section but not a label should be the string or integer value
             if (token[0] == '"') {
                 // we found a string count its length (without quotes)
                 size_t i = 1;
@@ -264,6 +262,15 @@ int main(int argc, char **argv) {
                     i++;
                 }
                 virtual_data_pos++;  // for null terminator
+            } else if (token[0] != '.' && token[0] != '@') {
+                // try parsing as integer
+                char *endptr;
+                strtol(token, &endptr, 10);
+                
+                if (*endptr == '\0') {
+                    // valid integer literal, takes 1 slot
+                    virtual_data_pos++;
+                }
             }
             free(token);
         }
@@ -271,6 +278,7 @@ int main(int argc, char **argv) {
 
     i32 data_size = (i32)virtual_data_pos;
 
+    
     // ========== PASS 2: Load data section ==========
     in_data_section = false;
     Tokenizer t2 = tokenizer_create(buffer);
@@ -317,9 +325,31 @@ int main(int argc, char **argv) {
             free(token);
             continue;
         }
+        
+        // process integer literals (no quotes)
+        if (in_data_section && token[0] != '"' && token[0] != '.' && token[0] != '@') {
+            char *endptr;
+            i32 val = (i32)strtol(token, &endptr, 10);
+            
+            if (*endptr == '\0') {
+                // valid integer literal
+                data_buffer[data_head++] = val;
+                free(token);
+                continue;
+            }
+        }
 
         free(token);
     }
+
+    // ===========  ADJUST LAVEL ADDRESSES FOR DATA OFFSET =========
+
+    for(int i = 0; i < label_count; ++i) {
+        if(!symbol_table[i].is_data_label) {
+            symbol_table[i].address += (i32)data_size;
+        }
+    }
+
 
     // ========== PASS 3: Generate program bytecode ==========
     in_data_section = false;

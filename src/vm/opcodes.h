@@ -36,5 +36,7 @@ void syscall_(VM *vm);
 void strlen_(VM *vm);
 void print_char(VM *vm);
 void print_int(VM *vm);
+void ldo(VM *vm);
+void ldxo(VM *vm);
 
 #endif /* OPCODES_H */
