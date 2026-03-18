@@ -208,6 +208,14 @@ int main(int argc, char **argv) {
             print_int(&vm);
         } break;
 
+        case LDO: {
+            ldo(&vm);
+        } break;
+
+        case LDXO: {
+            ldxo(&vm);
+        } break;
+
         default: {
             printf("BAD OPCODE, HALTING\n");
             vm.halted = true;

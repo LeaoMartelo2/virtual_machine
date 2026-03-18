@@ -578,3 +578,60 @@ void print_int(VM *vm) {
     vm->program_counter++;
 }
 
+void ldo(VM *vm) {
+    vm_verbose("LDO: {");
+    vm->program_counter++;
+
+    i32 data_addr = vm->program[vm->program_counter];
+    vm_verbose(" @addr=%d", data_addr);
+
+    vm->program_counter++;
+    i32 dest_reg = vm->program[vm->program_counter];
+    vm_verbose(" -> $%d", dest_reg);
+
+    /*
+    if(data_addr < vm->data_offset || data_addr >= vm->data_offset + vm->data_size) {
+        fprintf(stderr, "\nError: LDO address 0x%x out of bounds (data section: 0x%x - 0x%x)\n",
+                data_addr, vm->data_offset, vm->data_offset + vm->data_size - 1);
+        exit(1);
+    }
+    */
+
+    i32 value = vm->program[data_addr];
+    vm->registers[dest_reg] = value;
+    vm_verbose(" (value=%d) }\n");
+
+    vm->program_counter++;
+}
+
+void ldxo(VM *vm) {
+    vm_verbose("LDXO: {");
+    vm->program_counter++;
+
+    i32 base_reg_idx = vm->program[vm->program_counter];
+    i32 base_addr = vm->registers[base_reg_idx];
+    vm_verbose(" base$%d(0x%x)", base_reg_idx, base_addr);
+
+    vm->program_counter++;
+    i32 index_reg_idx = vm->program[vm->program_counter];
+    i32 index_offset = vm->registers[index_reg_idx];
+    vm_verbose(" + $%d(offset=%d)", index_reg_idx, index_offset);
+
+    vm->program_counter++;
+    i32 dest_reg = vm->program[vm->program_counter];
+    vm_verbose(" -> $%d", dest_reg);
+
+    i32 final_addr = base_addr + index_offset;
+
+    if (final_addr < vm->data_offset || final_addr >= vm->data_offset + vm->data_size) {
+        fprintf(stderr, "\nError: LDXO address 0x%x (0x%x + %d) out of bounds (data section: 0x%x - 0x%x)\n",
+                final_addr, base_addr, index_offset, vm->data_offset, vm->data_offset + vm->data_size - 1);
+        exit(1);
+    }
+
+    i32 value = vm->program[final_addr];
+    vm->registers[dest_reg] = value;
+    vm_verbose(" (value=%d) }\n");
+
+    vm->program_counter++;
+}
