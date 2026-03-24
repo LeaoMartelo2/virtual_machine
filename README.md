@@ -113,9 +113,6 @@ halt
 
 ### Opcodes implemented
 
-<details closed>
-<summary>CLICK TO EXPAND</summary>
-
 | Opcode |  INFO | Argument count | Example |
 | -------| ------|----------------|---------|
 | NO\_OP |  No operation. | 0 | no\_op|
@@ -165,7 +162,6 @@ halt
 |LSHA| Left SHift Ammount specified in $reg\_b, stores result in $reg\_a | 2 | lsha $reg\_a, $reg\_b|
 |RSHA|Right SHift Ammount specified in $reg\_b, stores result i $reg\_a  | 2 | rsha $reg\_a, $reg\_b|
 
-</details>
 
 - $reg = register index (Ex: $1, $2, $10)
 - %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `.label` or `@data_pointer`
