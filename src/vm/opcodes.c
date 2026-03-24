@@ -670,7 +670,166 @@ void rdint(VM *vm) {
 
     vm->registers[reg_idx] = value;
 
-    vm_verbose(" } \n");
+    vm_verbose(" }\n");
+
+    vm->program_counter++;
+}
+
+void and_(VM *vm) {
+    vm_verbose("AND: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    vm->program_counter++;
+
+    i32 reg_b_idx = vm->program[vm->program_counter];
+    i32 reg_b_val = vm->registers[reg_b_idx];
+
+    i32 result = reg_a_val & reg_b_val;
+
+    vm_verbose(" %d & %d = %d", reg_a_val, reg_b_val, result);
+
+    vm->registers[reg_a_idx] = result;
+
+    vm_verbose(" }\n");
+
+    vm->program_counter++;
+}
+
+void or_(VM *vm) {
+    vm_verbose("OR: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    vm->program_counter++;
+
+    i32 reg_b_idx = vm->program[vm->program_counter];
+    i32 reg_b_val = vm->registers[reg_b_idx];
+
+    i32 result = reg_a_val | reg_b_val;
+
+    vm_verbose(" %d | %d = %d", reg_a_val, reg_b_val, result);
+
+    vm->registers[reg_a_idx] = result;
+
+    vm_verbose(" }\n");
+
+    vm->program_counter++;
+}
+
+void xor_(VM *vm) {
+    vm_verbose("XOR: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    vm->program_counter++;
+
+    i32 reg_b_idx = vm->program[vm->program_counter];
+    i32 reg_b_val = vm->registers[reg_b_idx];
+
+    i32 result = reg_a_val ^ reg_b_val;
+
+    vm_verbose(" %d ^ %d = %d", reg_a_val, reg_b_val, result);
+
+    vm->registers[reg_a_idx] = result;
+
+    vm_verbose(" }\n");
+
+    vm->program_counter++;
+}
+
+void not_(VM *vm) {
+    vm_verbose("NOT: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    i32 result = ~reg_a_val;
+
+    vm->registers[reg_a_idx] = result;
+
+    vm_verbose(" ~%d = %d }\n", reg_a_val, result);
+
+    vm->program_counter++;
+}
+
+void lsh(VM *vm) {
+    vm_verbose("LSH: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    i32 result = reg_a_val << 1;
+
+    vm->registers[reg_a_idx] = result;
+
+    vm_verbose(" %d << 1 = %d }\n", reg_a_val, result);
+
+    vm->program_counter++;
+}
+
+void rsh(VM *vm) {
+    vm_verbose("RSH: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    i32 result = reg_a_val >> 1;
+
+    vm->registers[reg_a_idx] = result;
+
+    vm_verbose(" %d >> 1 = %d }\n", reg_a_val, result);
+
+    vm->program_counter++;
+}
+
+void lsha(VM *vm) {
+    vm_verbose("LSHA: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    vm->program_counter++;
+
+    i32 reg_b_idx = vm->program[vm->program_counter];
+    i32 reg_b_val = vm->registers[reg_b_idx];
+
+    i32 result = reg_a_val << reg_b_val;
+
+    vm->registers[reg_a_idx] = result;
+
+    vm_verbose(" %d << $d = %d }\n", reg_a_val, reg_b_val, result);
+
+    vm->program_counter++;
+}
+
+void rsha(VM *vm) {
+    vm_verbose("RSHA: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    vm->program_counter++;
+
+    i32 reg_b_idx = vm->program[vm->program_counter];
+    i32 reg_b_val = vm->registers[reg_b_idx];
+
+    i32 result = reg_a_val >> reg_b_val;
+
+    vm->registers[reg_a_idx] = result;
+
+    vm_verbose(" %d >> %d = %d }\n", reg_a_val, reg_b_val, result);
 
     vm->program_counter++;
 }

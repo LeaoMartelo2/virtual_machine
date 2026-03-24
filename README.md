@@ -69,11 +69,11 @@ Some info about the `-run` flag
 - This will leave the default `out.bin` file, unless specified by `-o`
 - This also allows you to have a `shebang` at the start of your `.asm` files, by simply adding `#!./vmasm -run` (assuming at the project root)
 
-The second to last instruction (`state_dump`) prints some info about the registers to the screen, it should look something like this:
-(Click to expand)
+The second to last instruction (`register_dump`) prints some info about the registers to the screen, it should look something like this:
 <details closed>
-<summary>state\_dump output</summary>
+<summary>CLICK TO EXPAND</summary>
 
+register\_dump
 
 ```raw
 REGISTERS:
@@ -113,6 +113,9 @@ halt
 
 ### Opcodes implemented
 
+<details closed>
+<summary>CLICK TO EXPAND</summary>
+
 | Opcode |  INFO | Argument count | Example |
 | -------| ------|----------------|---------|
 | NO\_OP |  No operation. | 0 | no\_op|
@@ -145,7 +148,7 @@ halt
 | CALL | Jumps to a label and sets the return address stack | 1 | call %value/label |
 | RET | Returns by jumping to the last return address stack, pops its value | 0 | ret |
 | SYSCALL | Execute system syscall, recieves syscall type through $arg\_a, check syscall table | 0 | syscall|
-| STRLEN | Accepts data pointer / data label, counts until finding \0, stores in reg\_a | 2 | strlen @string\_data, $reg\_a|
+| STRLEN | Accepts data pointer / data label, counts until finding `\0`, stores in reg\_a | 2 | strlen @string\_data, $reg\_a|
 |PRINT\_CHAR| Prints ASCII of value of register passed to stdout | 1 | print\_char $reg\_a | 
 |PRINT\_INT| Prints value of register passed to stdout | 1 | print\_int $reg\_a |
 |IPRINT\_CHAR | Prints ASCII of imediate value passed to stdout | 1 | iprint\_char %value|
@@ -153,9 +156,16 @@ halt
 |LINE\_BR| Prints '\n' to stdout | 0 | line\_br|
 |LDO| Load Data Offset, stores the offset of labeled data pointer to a $reg\_a |2| ldo @data\_pointer, $reg\_a |
 |LDXO| Load Data indeXed Offset, loads the value pointed by $reg\_a, offset by $reg\_b (could be 0), and stores it in $reg\_c | 3 | ldxo $reg\_a, $reg\_b, $reg\_c |
-|RDINT| Read a signed 32 bit integer from stding, store it to $arg\_a | 1 | rdint $arg\_a|
+|RDINT| Read a signed 32 bit integer from stding, store it to $reg\_a | 1 | rdint $reg\_a|
+|AND| Bitwise AND (`&`), stores result in $reg\_a |2| and $reg\_a, $reg\_b|
+|OR| Bitwise OR (`|`), stores result in $reg\_a | 2| or $reg\_a, $reg\_b|
+|XOR| Bitwise XOR (`^`), stores result in $reg\_a| 2| xor $reg\_, $reg\_b|
+|LSH| Left SHift (`&lt;&lt`) | 1| lsh $reg\_a|
+|RSH| Right SHift (`&gt;&gt`) | 1 | rsh $reg\_a|
+|LSHA| Left SHift Ammount specified in $reg\_b, stores result in $reg\_a | 2 | lsha $reg\_a, $reg\_b|
+|RSHA|Right SHift Ammount specified in $reg\_b, stores result i $reg\_a  | 2 | rsha $reg\_a, $reg\_b|
 
-
+</details>
 
 - $reg = register index (Ex: $1, $2, $10)
 - %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `.label` or `@data_pointer`

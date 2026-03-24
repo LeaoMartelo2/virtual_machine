@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     }
 
     if (header.version != VM_VERSION) {
-        fprintf(stderr, "ROM version might be incompatible with interpreter version (Expected %d, got %d)\n", VM_VERSION, header.version);
+        fprintf(stderr, "ROM Spec version might be incompatible with interpreter version (Expected %d, got %d)\n", VM_VERSION, header.version);
     }
 
     // ============ load it in to program array =============
@@ -232,7 +232,38 @@ int main(int argc, char **argv) {
             rdint(&vm);
         } break;
 
-        
+        case AND: {
+            and_(&vm);
+        } break;
+
+        case OR: {
+            or_(&vm);
+        } break;
+
+        case XOR: {
+            xor_(&vm);
+        } break;
+
+        case NOT: {
+            not_(&vm);
+        } break;
+
+        case LSH: {
+            lsh(&vm);
+        } break;
+
+        case RSH: {
+            rsh(&vm);
+        } break;
+
+        case LSHA: {
+            lsha(&vm);
+        } break;
+
+        case RSHA: {
+            rsha(&vm);
+        } break;
+
         case OPCODE_COUNT: 
         default: {
             printf("BAD OPCODE, HALTING\n");

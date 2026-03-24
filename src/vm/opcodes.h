@@ -42,5 +42,14 @@ void line_br(VM *vm);
 void ldo(VM *vm);
 void ldxo(VM *vm);
 void rdint(VM *vm);
+void and_(VM *vm);
+void or_(VM *vm);
+void xor_(VM *vm);
+void not_(VM *vm);
+void lsh(VM *vm);
+void rsh(VM *vm);
+void lsha(VM *vm);
+void rsha(VM *vm);
+
 
 #endif /* OPCODES_H */

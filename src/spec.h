@@ -86,6 +86,14 @@ typedef enum : i32 {
     LDO,
     LDXO,
     RDINT,
+    AND,
+    OR, 
+    XOR,
+    NOT,
+    LSH,
+    RSH,
+    LSHA,
+    RSHA,
 
     OPCODE_COUNT
 } Opcodes;
@@ -150,6 +158,14 @@ static const Instruction_spec ASSEMBLY_TABLE[] =  {
     [LDO]            =  { "ldo", 2,            { ARG_VAL, ARG_REG}},
     [LDXO]           =  { "ldxo", 3,           { ARG_REG, ARG_REG, ARG_REG}},
     [RDINT]          =  { "rdint", 1,          { ARG_REG}},
+    [AND]            =  { "and", 2,            { ARG_REG, ARG_REG}},
+    [OR]             =  { "or", 2,             { ARG_REG, ARG_REG}},
+    [XOR]            =  { "xor", 2,            { ARG_REG, ARG_REG}},
+    [NOT]            =  { "not", 1,            { ARG_REG}},
+    [LSH]            =  { "lsh", 1,            { ARG_REG}},
+    [RSH]            =  { "rsh", 1,            { ARG_REG}},
+    [LSHA]           =  { "lsha", 2,           { ARG_REG, ARG_REG}},
+    [RSHA]           =  { "rsha", 2,           { ARG_REG, ARG_REG}},
 };
 
 // :Tabularize /[={]

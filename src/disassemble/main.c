@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
     }
     printf("')\n");
 
-    printf("    Version format %d\n", header.version);
+    printf("    Spec format %d\n", header.version);
     printf("    Data section size: %d bytes\n", header.data_size);
     printf("    Program offset %d\n", header.program_start);
     printf("==========================================================\n");
