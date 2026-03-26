@@ -4,13 +4,13 @@ Small assembly language that gets compiled to bytecode and runs on its own inter
 
 The goal of the project is to be very simple and thus be used as a learning experience.
 This also means the code is not often the best, but very explicit about what it does.
-I've also tried to maintain the assembly instructions with non-cryptic names, making it easier to communicate meaning.
+Also try to maintain the assembly instructions with non-cryptic names, making it easier to communicate meaning.
 
 ## Compiling
-The target is `Linux x86_64` 
+The target is `Linux x86_64`, though i might make it work on POSIX / Unix (BSD / MacOS) in the future.
 
 Requirements:
- - `gcc` (or equivalent with c11 support / Unix)
+ - `gcc` (or equivalent with c11 support for Linux)
  - `make`
 
 Clone the repository, and at the root of simply run:
