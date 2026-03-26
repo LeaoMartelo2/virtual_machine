@@ -149,6 +149,7 @@ halt
 | RET | Returns by jumping to the last return address stack, pops its value | 0 | ret |
 | SYSCALL | Execute system syscall, recieves syscall type through $arg\_a, check syscall table | 0 | syscall|
 | STRLEN | Accepts data pointer / data label, counts until finding `\0`, stores in reg\_a | 2 | strlen @string\_data, $reg\_a|
+| STRLEN\_R | Uses value of register as data pointer, counts until finding `\0`, stores in reg\_a | 2 | strlen $reg\_dataptr, $reg\_a|
 |PRINT\_CHAR| Prints ASCII of value of register passed to stdout | 1 | print\_char $reg\_a | 
 |PRINT\_INT| Prints value of register passed to stdout | 1 | print\_int $reg\_a |
 |IPRINT\_CHAR | Prints ASCII of imediate value passed to stdout | 1 | iprint\_char %value|
