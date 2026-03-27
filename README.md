@@ -179,7 +179,12 @@ The syscall opcode gets its syscall type thrugh $arg\_a, leaving $arg\_b and for
 
 |Syscall | Arguments | Equivalent in C |
 |-|-|-|
-|write   | arg\_b = file desriptor <br> arg\_c = data pointer <br> arg\_d = size of data | write(arg\_a, arg\_b, arg\_c)
+|write   | arg\_b = file desriptor <br> arg\_c = data pointer <br> arg\_d = size of data | write(arg\_a, arg\_b, arg\_c)|
+|getpid  | arg\_b = result | arg\_b = getpid()|
+|kill    | arg\_b = pid <br> arg\_c = signal | kill(arg\_b, arg\_c)|
+|open    | arg\_a = file descriptor <br> arg\_b = file path <br> arg\_c = mode <br> arg\_d = permission | arg\_a = open(arg\_b, arg\_c, arg\_d)|
+|close| arg\_b = file descriptor | close(arg\_b)| 
+
 
 </details>
 
@@ -194,6 +199,21 @@ The syscall opcode gets its syscall type thrugh $arg\_a, leaving $arg\_b and for
 |stdout| 1|
 |stderr| 2|
 |write\_syscall| 1|
+|getpid\_syscall| 2|
+|kill\_syscall| 3|
+|open\_syscall| 4|
+|close\_syscall| 5|
+|O\_RDONLY| 0|
+|O\_WRONLY| 1|
+|O\_RDWR| 2|
+|O\_CREAT| 64|
+|O\_TRUNC| 512|
+|O\_APPEND| 1024|
+|S\_IRUSR| 256 (0400)|
+|S\_IWRSR| 128 (0200)|
+|S\_IXUSR| 64 (0100)|
+|perm\_0644| 420 (0644)|
+|perm\_0755| 493 (0755)|
 
 ### Bytecode rom format
 

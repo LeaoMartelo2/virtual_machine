@@ -204,6 +204,14 @@ typedef struct {
     i32 value;
 } Constant_spec;
 
+typedef enum : i32 {
+    WRITE_SYSCALL = 1,
+    GETPID_SYSCALL = 2,
+    KILL_SYSCALL = 3,
+    OPEN_SYSCALL = 4,
+    CLOSE_SYSCAL = 5,
+} Syscall_numbers;
+
 static const Constant_spec PREDEFINED_CONSTANTS[] = {
 
     {"true", 1},
@@ -213,8 +221,26 @@ static const Constant_spec PREDEFINED_CONSTANTS[] = {
     {"stdout", 1},
     {"stderr", 2},
 
-    {"write_syscall", 1},
+    {"O_RDONLY", 0},
+    {"O_WRONLY", 1},
+    {"O_RDWR", 2},
+    {"O_CREAT", 64},
+    {"O_TRUNC", 512},
+    {"O_APPEND", 1024},
+
+    {"S_IRUSR", 256},   /* 0400 */
+    {"S_IWRSR", 128},   /* 0200 */
+    {"S_IXUSR", 64},    /* 0100 */
+    {"perm_0644", 420}, /* 0644 */
+    {"perm_0755", 493}, /* 0755 */
+
+    {"write_syscall", WRITE_SYSCALL},
+    {"getpid_syscall", GETPID_SYSCALL},
+    {"kill_syscall", KILL_SYSCALL},
+    {"open_syscall", OPEN_SYSCALL},
+    {"close_syscall", CLOSE_SYSCAL},
 };
+
 
 #define CONSTANT_COUNT (sizeof(PREDEFINED_CONSTANTS) / sizeof(Constant_spec))
 
