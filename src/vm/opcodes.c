@@ -8,7 +8,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <linux/limits.h>
 #include <signal.h>
+#include <fcntl.h>
 
 void vm_verbose_(VM *vm, const char *format, ...) {
 
@@ -540,13 +543,54 @@ void syscall_(VM *vm) {
             vm->registers[REG_ARG_B] = self_pid;
         } break;
 
-        case KILL_SYSCALL: {
+        case KILL_SYSCALL: { /* kill(arg_b, arg_c) */
             i32 pid = vm->registers[REG_ARG_B];
             i32 signal = vm->registers[REG_ARG_C];
 
             kill((pid_t)pid, signal);
 
             vm_verbose(" Killed %d (%d) }\n", pid, signal);
+        } break;
+
+        case OPEN_SYSCALL: { /* arg_a = open(arg_b, arg_c, arg_d) */
+	    char path_buffer[PATH_MAX];
+	    i32 buff_addr = vm->registers[REG_ARG_B];
+	    i32 flags = vm->registers[REG_ARG_C];
+	    i32 mode = vm->registers[REG_ARG_D];
+
+	    i32 len = 0;
+	    while(buff_addr + len < vm->program_size &&
+		    vm->program[buff_addr + len] != 0 &&
+		    len < (PATH_MAX -1)) {
+
+		path_buffer[len] = (char)(vm->program[buff_addr + len] & 0xFF);
+		len++;
+	    }
+	    /* dont trust the null terminator in the program */
+	    path_buffer[len] = '\0'; 
+
+	    /*
+	    for(i32 i = 0; i< len; ++i) {
+		printf("%c\n", path_buffer[i]);
+	    }
+	    printf("\n");
+	    */
+
+	    int fd = open(path_buffer, flags, mode);
+            if(fd == 1) {perror("file failed to open"); exit(1);}
+	    vm->registers[REG_ARG_A] = (i32)fd;
+
+	    vm_verbose(" open(\"%s\", %d, %d) -> fd: %d }\n", path_buffer, flags, mode, fd);
+
+        } break;
+
+        case CLOSE_SYSCAL: {
+            i32 fd = vm->registers[REG_ARG_B];
+            
+            close(fd);
+
+            vm_verbose(" close(%d) }\n", fd);
+
         } break;
 
     }
