@@ -182,7 +182,7 @@ The syscall opcode gets its syscall type thrugh $arg\_a, leaving $arg\_b and for
 |write   | arg\_b = file desriptor <br> arg\_c = data pointer <br> arg\_d = size of data | write(arg\_a, arg\_b, arg\_c)|
 |getpid  | arg\_b = result | arg\_b = getpid()|
 |kill    | arg\_b = pid <br> arg\_c = signal | kill(arg\_b, arg\_c)|
-|open|   | arg\_a = file descriptor <br> arg\_b = file path <br> arg\_c = mode <br> arg\_d = permission | arg\_a = open(arg\_b, arg\_c, arg\_d)|
+|open    | arg\_a = file descriptor <br> arg\_b = file path <br> arg\_c = mode <br> arg\_d = permission | arg\_a = open(arg\_b, arg\_c, arg\_d)|
 |close| arg\_b = file descriptor | close(arg\_b)| 
 
 
