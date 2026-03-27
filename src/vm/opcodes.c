@@ -518,7 +518,6 @@ void syscall_(VM *vm) {
             if (buff_addr <= vm->data_offset && buff_addr < vm->program_size) {
                 for(i32 i = 0; i < count && buff_addr + i < vm->program_size; ++i) {
                     char c = (char)vm->program[buff_addr + i];
-                    if(c == '\0') break;
                     write(fd, &c, 1);
                 }
 
