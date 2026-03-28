@@ -190,6 +190,8 @@ The syscall opcode gets its syscall type thrugh $arg\_a, leaving $arg\_b and for
 
 
 ### Constants
+<details closed>
+<summary> CLICK TO EXPAND </summary>
 
 |Constant| Value|
 |-|-|
@@ -214,6 +216,8 @@ The syscall opcode gets its syscall type thrugh $arg\_a, leaving $arg\_b and for
 |S\_IXUSR| 64 (0100)|
 |perm\_0644| 420 (0644)|
 |perm\_0755| 493 (0755)|
+
+</details>
 
 ### Bytecode rom format
 
