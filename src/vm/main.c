@@ -67,6 +67,8 @@ int main(int argc, char **argv) {
     vm.stack_head = 0;
     memset(vm.stack, (i32)0, sizeof(vm.stack));
     memset(vm.registers, (i32)0, sizeof(vm.registers));
+    vm.registers[REG_RAM_START] = MAX_PROGRAM_SIZE;
+    vm.registers[REG_HEAP_PTR] = MAX_PROGRAM_SIZE;
     memset(vm.return_address_stack, (i32)0, sizeof(vm.return_address_stack));
     vm.return_address_head = 0;
 

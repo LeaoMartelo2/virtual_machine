@@ -29,6 +29,39 @@ void vm_verbose_(VM *vm, const char *format, ...) {
 
 #define vm_verbose(fmt, ...) vm_verbose_(vm, (fmt), ##__VA_ARGS__)
 
+static i32 *get_mem_ptr(VM *vm, i32 virtual_addr) {
+
+    if (virtual_addr < 0) return NULL;
+
+    if (virtual_addr < MAX_PROGRAM_SIZE) {
+        return &vm->program[virtual_addr];
+    } else {
+        i32 ram_addr = virtual_addr - MAX_PROGRAM_SIZE;
+
+        if(ram_addr < MAX_PROGRAM_SIZE) {
+            return &vm->memory[ram_addr];
+        }
+    }
+    return NULL;
+}
+
+static i32 *get_vm_ptr(VM *vm, i32 addr) {
+    if (addr < 0) return NULL;
+
+    if (addr < MAX_STACK_SIZE) {
+        return &vm->program[addr];
+    }
+
+    i32 ram_idx = addr - MAX_PROGRAM_SIZE;
+    if(ram_idx < MAX_PROGRAM_SIZE) {
+        return &vm->memory[ram_idx];
+    }
+
+    return NULL;
+
+}
+
+
 void no_op(VM *vm) {
     vm_verbose("NO_OP\n");
     vm->program_counter++;
@@ -521,16 +554,15 @@ void syscall_(VM *vm) {
             
             vm_verbose(" write(%d, 0x%x, %d)", fd, buff_addr, count);
 
-
-            if (buff_addr <= vm->data_offset && buff_addr < vm->program_size) {
-		for(i32 i = 0; i < count; ++i){
-
-		    char c = (char)(vm->program[buff_addr + i] & 0xFF);
-
+            for(i32 i = 0; i < count; ++i) {
+                i32 *ptr = get_mem_ptr(vm, buff_addr + i);
+                if(ptr) {
+                    char c = (char)(*ptr & 0xFF);
                     write(fd, &c, 1);
-		}
-                fsync(fd);
+                }
             }
+            fsync(fd);
+
             vm_verbose(" }\n");
         } break;
 
@@ -593,6 +625,38 @@ void syscall_(VM *vm) {
 
         } break;
 
+        case READ_SYSCALL: {
+            i32 fd = vm->registers[REG_ARG_B];
+            i32 buff_addr = vm->registers[REG_ARG_C];
+            i32 count = vm->registers[REG_ARG_D];
+
+            i32 bytes_read_total = 0;
+
+            while(bytes_read_total < 255) {
+                char c;
+                ssize_t n = read(fd, &c, 1);
+
+                if (n <= 0) break; // error or EOF
+                if (c == '\n') break; // stop on ENTER for now
+
+                i32 *ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
+
+                if(ptr) {
+                    *ptr = (i32)c;
+                    bytes_read_total++;
+                }
+            }
+
+           
+            i32 *null_terminator_ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
+            if(null_terminator_ptr) *null_terminator_ptr = 0;
+            
+            vm->registers[REG_HEAP_PTR] += (bytes_read_total + 1);
+            vm->registers[REG_RET] = bytes_read_total;
+            vm_verbose(" read(%d, %d, %d) -> read %d bytes }\n", fd, buff_addr, count, bytes_read_total);
+
+        } break;
+
     }
 }
 
@@ -608,11 +672,13 @@ void strlen_(VM *vm) {
     vm_verbose(" -> $%d", dest_reg);
 
     i32 len = 0;
-    if (buff_addr <= vm->data_offset && buff_addr < vm->program_size) {
-        while ( buff_addr + len < vm->program_size && vm->program[buff_addr + len] != 0 ) {
-            len++;
-        }
+    while(true) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + len);
+
+        if(!ptr || *ptr == 0) break;
+        len++;
     }
+
     vm->registers[dest_reg] = len;
     vm_verbose(" (length=%d) }\n", len);
     vm->program_counter++;
@@ -634,11 +700,14 @@ void strlen_r(VM *vm) {
     vm_verbose(" -> $%d", dest_reg);
 
     i32 len = 0;
-    if (buff_addr + len <= vm->data_offset) {
-        while ( buff_addr + len < vm->program_size && vm->program[buff_addr + len] != 0 ) {
-            len++;
-        }
+    while(true) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + len);
+
+        if(!ptr || *ptr == 0) break;
+        len++;
     }
+
+
     vm->registers[dest_reg] = len;
     vm_verbose(" (length=%d) }\n", len);
     vm->program_counter++;

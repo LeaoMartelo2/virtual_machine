@@ -3,6 +3,8 @@
 
 #include "../spec.h"
 
+//static i32 *get_mem_ptr(VM *vm, i32 virtual_address);
+
 void no_op(VM *vm);
 void halt(VM *vm);
 void state_dump(VM *vm);

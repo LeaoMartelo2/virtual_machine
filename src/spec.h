@@ -36,11 +36,15 @@ typedef enum : i32 {
 
     NAMED_REGISTERS_SPLIT,
 
+
     REG_ARG_A = 50,
     REG_ARG_B,
     REG_ARG_C,
     REG_ARG_D,
     REG_RET,
+
+    REG_RAM_START,
+    REG_HEAP_PTR,
 
     REG_COUNT
 
@@ -194,7 +198,9 @@ static const Named_register NAMED_REGISTERS[] = {
      { "arg_b", REG_ARG_B},
      { "arg_c", REG_ARG_C},
      { "arg_d", REG_ARG_D},
-     { "ret",   REG_RET}
+     { "ret",   REG_RET},
+     { "ram_start", REG_RAM_START},
+     { "heap", REG_HEAP_PTR},
 };
 
 #define NAMED_REGISTER_COUNT (sizeof(NAMED_REGISTERS) / sizeof(Named_register))
@@ -210,6 +216,7 @@ typedef enum : i32 {
     KILL_SYSCALL = 3,
     OPEN_SYSCALL = 4,
     CLOSE_SYSCAL = 5,
+    READ_SYSCALL = 6,
 } Syscall_numbers;
 
 static const Constant_spec PREDEFINED_CONSTANTS[] = {
@@ -239,6 +246,10 @@ static const Constant_spec PREDEFINED_CONSTANTS[] = {
     {"kill_syscall", KILL_SYSCALL},
     {"open_syscall", OPEN_SYSCALL},
     {"close_syscall", CLOSE_SYSCAL},
+    {"read_syscall", READ_SYSCALL},
+
+
+    {"RAM_START", MAX_PROGRAM_SIZE},
 };
 
 
@@ -261,6 +272,8 @@ typedef struct {
 
     i32 data_offset;
     i32 data_size;
+
+    i32 memory[MAX_PROGRAM_SIZE];
 
     i32 registers[REG_COUNT];
     i32 cond_flag;
