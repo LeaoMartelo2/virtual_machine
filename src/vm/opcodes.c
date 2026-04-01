@@ -638,7 +638,7 @@ void syscall_(VM *vm) {
 
                 if (n <= 0) break; /* error or EOF */
                 
-                if(fd == stdin && c == '\n') break;
+                if(fd == 0 && c == '\n') break;
 
 
                 i32 *ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
