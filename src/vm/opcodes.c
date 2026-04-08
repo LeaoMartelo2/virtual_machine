@@ -640,6 +640,8 @@ void syscall_(VM *vm) {
                 
                 if(fd == 0 && c == '\n') break;
 
+                vm->registers[REG_ARG_A] = (i32)n;
+
 
                 i32 *ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
 
