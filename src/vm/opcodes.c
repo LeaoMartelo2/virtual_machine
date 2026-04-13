@@ -29,38 +29,35 @@ void vm_verbose_(VM *vm, const char *format, ...) {
 
 #define vm_verbose(fmt, ...) vm_verbose_(vm, (fmt), ##__VA_ARGS__)
 
-static i32 *get_mem_ptr(VM *vm, i32 virtual_addr) {
 
-    if (virtual_addr < 0) return NULL;
-
-    if (virtual_addr < MAX_PROGRAM_SIZE) {
-        return &vm->program[virtual_addr];
-    } else {
-        i32 ram_addr = virtual_addr - MAX_PROGRAM_SIZE;
-
-        if(ram_addr < MAX_PROGRAM_SIZE) {
-            return &vm->memory[ram_addr];
-        }
-    }
-    return NULL;
-}
+struct vm_ptr_info_t {
+    bool RAM_addr;
+    bool ROM_addr;
+    i32 addr;
+} vm_ptr_info;
 
 static i32 *get_vm_ptr(VM *vm, i32 addr) {
+    
+    vm_ptr_info = (struct vm_ptr_info_t){0};
+
     if (addr < 0) return NULL;
 
-    if (addr < MAX_STACK_SIZE) {
+    if (addr < MAX_PROGRAM_SIZE) {
+        vm_ptr_info.ROM_addr = true;
+        vm_ptr_info.addr = addr;
         return &vm->program[addr];
     }
 
     i32 ram_idx = addr - MAX_PROGRAM_SIZE;
     if(ram_idx < MAX_PROGRAM_SIZE) {
+        vm_ptr_info.RAM_addr = true;
+        vm_ptr_info.addr = ram_idx;
         return &vm->memory[ram_idx];
     }
 
     return NULL;
 
 }
-
 
 void no_op(VM *vm) {
     vm_verbose("NO_OP\n");
@@ -83,7 +80,7 @@ void state_dump(VM *vm) {
     }
     printf("##############################\n");
     printf("MACHINE INFO:\n");
-    printf("        program_couter  = %d\n", vm->program_counter);
+    printf("        program_counter  = %d\n", vm->program_counter);
     printf("        program_size    = %d\n", vm->program_size);
     printf("        stack_head      = %d\n", vm->stack_head);
     printf("        top of stack    = %d\n", vm->stack[vm->stack_head - 1]);
@@ -287,7 +284,7 @@ void jmp(VM *vm) {
     vm_verbose("JMP: {");
     vm->program_counter++;
     i32 jmp_to = vm->program[vm->program_counter];
-    vm_verbose(" program_couter -> %.2d }\n", jmp_to);
+    vm_verbose(" program_counter -> %.2d }\n", jmp_to);
     vm->program_counter = jmp_to;
 }
 
@@ -526,14 +523,14 @@ void call(VM *vm) {
     vm->return_address_head++;
 
     i32 jmp_to = vm->program[vm->program_counter];
-    vm_verbose(" program_couter -> %.2d }\n", jmp_to);
+    vm_verbose(" program_counter -> %.2d }\n", jmp_to);
     vm->program_counter = jmp_to;
 }
 
 void ret(VM *vm) {
     vm_verbose("RET: {");
 
-    vm_verbose(" program_couter = %d }\n", vm->return_address_stack[vm->return_address_head - 1]);
+    vm_verbose(" program_counter = %d }\n", vm->return_address_stack[vm->return_address_head - 1]);
     vm->program_counter = vm->return_address_stack[vm->return_address_head - 1];
 
     vm->return_address_head--;
@@ -555,7 +552,7 @@ void syscall_(VM *vm) {
             vm_verbose(" write(%d, 0x%x, %d)", fd, buff_addr, count);
 
             for(i32 i = 0; i < count; ++i) {
-                i32 *ptr = get_mem_ptr(vm, buff_addr + i);
+                i32 *ptr = get_vm_ptr(vm, buff_addr + i);
                 if(ptr) {
                     char c = (char)(*ptr & 0xFF);
                     write(fd, &c, 1);
@@ -781,17 +778,27 @@ void ldo(VM *vm) {
     vm_verbose("LDO: {");
     vm->program_counter++;
 
-    i32 data_addr = vm->program[vm->program_counter];
-    vm_verbose(" @addr=%d", data_addr);
+    i32 *data_addr = get_vm_ptr(vm, vm->program[vm->program_counter]);
+
+    if(vm_ptr_info.ROM_addr) {
+        vm_verbose(" @addr=%d(ROM)", vm_ptr_info.addr);
+    }
+
+    if(vm_ptr_info.RAM_addr) {
+        vm_verbose(" @addr=%d(RAM)", vm_ptr_info.addr);
+    }
 
     vm->program_counter++;
     i32 dest_reg = vm->program[vm->program_counter];
     vm_verbose(" -> $%d", dest_reg);
 
 
-    i32 value = vm->program[data_addr];
+    //i32 value = vm->program[data_addr];
+
+    i32 value = *data_addr;
+
     vm->registers[dest_reg] = value;
-    vm_verbose(" (value=%d) }\n");
+    vm_verbose(" (value=%d) }\n", value);
 
     vm->program_counter++;
 }
@@ -802,23 +809,35 @@ void ldxo(VM *vm) {
 
     i32 base_reg_idx = vm->program[vm->program_counter];
     i32 base_addr = vm->registers[base_reg_idx];
-    vm_verbose(" base$%d(0x%x)", base_reg_idx, base_addr);
+
+    //i32 *base_addr_value = get_vm_ptr(vm, base_addr);
 
     vm->program_counter++;
     i32 index_reg_idx = vm->program[vm->program_counter];
     i32 index_offset = vm->registers[index_reg_idx];
-    vm_verbose(" + $%d(offset=%d)", index_reg_idx, index_offset);
 
     vm->program_counter++;
     i32 dest_reg = vm->program[vm->program_counter];
+
+
+    i32 *final_addr = get_vm_ptr(vm, base_addr + index_offset);
+
+    if(vm_ptr_info.ROM_addr) {
+        vm_verbose(" base$%d(%d)(ROM)", base_reg_idx, base_addr);
+    }
+
+    if(vm_ptr_info.RAM_addr) {
+        vm_verbose(" base$%d(%d)(RAM)", base_reg_idx, base_addr);
+    }
+
+
+    vm_verbose(" + $%d(offset=%d)", index_reg_idx, index_offset);
     vm_verbose(" -> $%d", dest_reg);
 
-    i32 final_addr = base_addr + index_offset;
-
     
-    i32 value = vm->program[final_addr];
+    i32 value = *final_addr;
     vm->registers[dest_reg] = value;
-    vm_verbose(" (value=%d) }\n");
+    vm_verbose(" (value=%d) }\n", value);
 
     vm->program_counter++;
 }

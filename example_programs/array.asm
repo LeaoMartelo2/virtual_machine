@@ -1,4 +1,4 @@
-toggle_verbose false
+toggle_verbose 0
 mov 8, $8
 
 mov @scores, $1
