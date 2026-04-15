@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
     memset(vm.return_address_stack, (i32)0, sizeof(vm.return_address_stack));
     vm.return_address_head = 0;
 
-    printf("==== VM INIT ===\n");
+    printf("==== VM INIT ====\n");
     
     while (!vm.halted) {
 
