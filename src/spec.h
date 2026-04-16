@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define UNUSED(x) ((void)(x))
+
 #define MAX_PROGRAM_SIZE 32767
 #define MAX_STACK_SIZE 256
 

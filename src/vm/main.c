@@ -9,14 +9,38 @@
 
 #define ARR_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
 
+void dump_ram_memory(VM *vm);
+
+void print_usage(int argc, char **argv) {
+    UNUSED(argc);
+    printf("Usage: %s <program.bin> [flags]\n", argv[0]);
+    printf("          -v, -verbose       Force verbose mode on.\n");
+    printf("          -md, -memdump      Dump RAM at program halt. (RAM.DATA)\n");
+
+}
+
 int main(int argc, char **argv) {
 
     if (argc < 2) {
-        printf("Usage: %s <program.obj>\n", argv[0]);
+        print_usage(argc, argv);
         exit(1);
     }
 
-    const char *program_file_path = argv[1];
+    bool forced_verbose = false;
+    bool dump_ram = false;
+    const char *program_file_path;
+
+    for (int i = 1; i <argc; ++i) {
+
+        if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "-verbose") == 0) { forced_verbose = true;}
+
+        if(strcmp(argv[i], "-md") == 0 || strcmp(argv[i], "-memdump") == 0) { dump_ram = true;}
+
+        /* first flag that does not start with - is file path*/
+        if(argv[i][0] != '-') {program_file_path = argv[i];}
+
+    }
+
 
     FILE *file = fopen(program_file_path, "rb");
     if (!file) {
@@ -41,7 +65,7 @@ int main(int argc, char **argv) {
     }
 
     if (header.version != VM_VERSION) {
-        fprintf(stderr, "ROM Spec version might be incompatible with interpreter version (Expected %d, got %d)\n", VM_VERSION, header.version);
+        fprintf(stderr, "ROM Spec version might be incompatible with interpreter version (Expected HASH:%d, got HASH:%d)\n", VM_VERSION, header.version);
     }
 
     // ============ load it in to program array =============
@@ -63,19 +87,24 @@ int main(int argc, char **argv) {
     vm.program_counter = header.program_start;
 
     vm.halted = false;
-    vm.verbose = false;
+    vm.verbose = forced_verbose;
     vm.stack_head = 0;
     memset(vm.stack, (i32)0, sizeof(vm.stack));
     memset(vm.registers, (i32)0, sizeof(vm.registers));
+    // intentionally not clearing out the ram on program start
+    //memset(vm.memory, (i32)0, sizeof(vm.memory));
     vm.registers[REG_RAM_START] = MAX_PROGRAM_SIZE;
     vm.registers[REG_HEAP_PTR] = MAX_PROGRAM_SIZE;
     memset(vm.return_address_stack, (i32)0, sizeof(vm.return_address_stack));
     vm.return_address_head = 0;
 
     printf("==== VM INIT ====\n");
+    if(forced_verbose) printf("==== FORCING VERBOSE OUTPUT ====\n");
     
     while (!vm.halted) {
-
+        
+        if(forced_verbose && vm.verbose == false) {vm.verbose = true;}
+        
         switch ((Opcodes)vm.program[vm.program_counter]) {
 
         case NO_OP: {
@@ -279,5 +308,23 @@ int main(int argc, char **argv) {
         }
     }
 
+    if(dump_ram) dump_ram_memory(&vm);
+
     return 0;
 }
+
+
+void dump_ram_memory(VM *vm) {
+    
+    FILE *file = fopen("RAM.DATA", "wb");
+    if(!file) {
+        exit(1);
+    }
+
+    fwrite(vm->memory, sizeof(i32), MAX_PROGRAM_SIZE, file);
+    fclose(file);
+
+    printf("Dumped RAM memory to 'RAM.DATA'\n");
+
+}
+

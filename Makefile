@@ -45,4 +45,4 @@ build/assemble/main.o: src/assembler/main.c ${GLOBAL_DEPS}
 clean: clear
 
 clear:
-	rm -f *.obj *.bin disassembled.asm file.txt index.html vm vmasm disasm build/vm/*.o build/disassemble/*.o build/assemble/*.o
+	rm -f *.obj *.bin disassembled.asm file.txt index.html RAM.DATA vm vmasm disasm build/vm/*.o build/disassemble/*.o build/assemble/*.o
