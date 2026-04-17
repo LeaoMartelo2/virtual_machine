@@ -78,7 +78,7 @@ void report_error(const char *filename, const char *buffer, int line, int col, s
     fprintf(stderr, "\033[1;32m^\033[0m\n");
 }
 
-void run_after_compile(const char *out_file) {
+void run_after_compile(const char *out_file, char **extra_args, int extra_argc) {
     char exe_path[PATH_MAX];
     char vm_path[PATH_MAX];
     char temp_path[PATH_MAX];
@@ -103,8 +103,22 @@ void run_after_compile(const char *out_file) {
         return;
     }
 
-    char *args[] = {vm_path, (char *)out_file, NULL};
+    int total_args = 2 + extra_argc + 1;
+    char **args = malloc(sizeof(char *) * total_args);
+    if(!args) { perror("allocating args for interpreter failed"); return; }
+
+    args[0] = vm_path;
+    args[1] = (char *)out_file;
+
+    for (int i = 0; i < extra_argc; ++i) {
+         args[i + 2] = extra_args[i];
+    }
+
+    args[total_args - 1] = NULL;
+
+    //char *args[] = {vm_path, (char *)out_file, NULL};
     execv(vm_path, args);
+
     perror("if you got here, execv failed miserably");
     exit(1);
 }
@@ -198,8 +212,11 @@ int main(int argc, char **argv) {
     char *output_path = "out.bin";
     bool run_flag = false;
 
+    char **interpreter_args = NULL;
+    int interpreter_argc;
+
     if (argc < 2) {
-        printf("Usage: %s <input file> [-o <output>] [-run]\n", argv[0]);
+        printf("Usage: %s <input file> [-o <output>] [-run [interpreter flags...]]\n", argv[0]);
         exit(1);
     }
 
@@ -209,6 +226,14 @@ int main(int argc, char **argv) {
             else { fprintf(stderr, "Error: -o needs a path.\n"); exit(1); }
         } else if (strcmp(argv[i], "-run") == 0) {
             run_flag = true;
+
+            /* anything after -run is passed to the interpreter */
+            if(i + 1 < argc) {
+                interpreter_args = &argv[i + 1];
+                interpreter_argc = argc - (i - 1) - 2;
+                break;
+            }
+
         } else if (argv[i][0] != '-') {
             input_path = argv[i];
         }
@@ -397,7 +422,8 @@ int main(int argc, char **argv) {
     free(buffer);
     for(int i=0; i<label_count; i++) free(symbol_table[i].name);
 
-    if (run_flag) run_after_compile(output_path);
+    if (run_flag) run_after_compile(output_path, interpreter_args, interpreter_argc);
+
 
     return 0;
 }
