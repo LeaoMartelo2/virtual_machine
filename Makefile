@@ -4,7 +4,12 @@ CC := gcc
 CFLAGS := -Wall -Wextra -Wswitch-enum -static -std=c11 -ggdb
 
 VM_VERSION := $(shell expr `cksum src/spec.h | cut -f1 -d' '` % 100000)
-CFLAGS += -DVM_VERSION=$(VM_VERSION)
+GIT_HASH := $(shell git describe --always --dirty 2>/dev/null || echo "Not a git environment")
+BUILD_DATE := $(shell date "+%Y-%m-%d %H:%M:%S")
+
+CFLAGS += -DVM_VERSION=$(VM_VERSION) 
+CFLAGS += -DGIT_HASH='"$(GIT_HASH)"'
+CFLAGS += -DBUILD_DATE='"$(BUILD_DATE)"'
 
 GLOBAL_DEPS = src/spec.h
 
