@@ -165,9 +165,10 @@ halt
 |RSH| Right SHift (`>>`) | 1 | rsh $reg\_a|
 |LSHA| Left SHift Ammount specified in $reg\_b, stores result in $reg\_a | 2 | lsha $reg\_a, $reg\_b|
 |RSHA|Right SHift Ammount specified in $reg\_b, stores result i $reg\_a  | 2 | rsha $reg\_a, $reg\_b|
+|STR| STore to Ram the value stored in $reg\_a in the position stored by $reg\_b| 2| str $reg\_a, $reg\_b|
 
 
-- $reg = register index (Ex: $1, $2, $10)
+- $reg = register index (Ex: $1, $5, $10)
 - %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `.label` or `@data_pointer`
 - There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values for `call` or `syscall`
 

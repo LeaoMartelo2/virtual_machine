@@ -43,6 +43,11 @@ typedef enum : i32 {
     REG_13,
     REG_14,
     REG_15,
+    REG_16, 
+    REG_17,
+    REG_18,
+    REG_19,
+    REG_20,
 
     NAMED_REGISTERS_SPLIT,
 
@@ -114,6 +119,7 @@ typedef enum : i32 {
     RSH,
     LSHA,
     RSHA,
+    STR,
 
     OPCODE_COUNT
 } Opcodes;
@@ -187,6 +193,7 @@ static const Instruction_spec ASSEMBLY_TABLE[] =  {
     [RSH]            =  { "rsh", 1,            { ARG_REG}},
     [LSHA]           =  { "lsha", 2,           { ARG_REG, ARG_REG}},
     [RSHA]           =  { "rsha", 2,           { ARG_REG, ARG_REG}},
+    [STR]            =  { "str", 2,            { ARG_REG, ARG_REG}},
 };
 
 // :Tabularize /[={]
@@ -211,6 +218,7 @@ static const Named_register NAMED_REGISTERS[] = {
      { "ret",   REG_RET},
      { "ram_start", REG_RAM_START},
      { "heap", REG_HEAP_PTR},
+     { "ram", REG_HEAP_PTR},
 };
 
 #define NAMED_REGISTER_COUNT (sizeof(NAMED_REGISTERS) / sizeof(Named_register))

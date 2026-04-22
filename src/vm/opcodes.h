@@ -53,6 +53,7 @@ void lsh(VM *vm);
 void rsh(VM *vm);
 void lsha(VM *vm);
 void rsha(VM *vm);
+void str(VM *vm);
 
 
 #endif /* OPCODES_H */

@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "opcodes.h"
+#include "error.h"
 
 #include <inttypes.h>
 #include <stdarg.h>
@@ -277,7 +278,11 @@ void cmp(VM *vm) {
         return;
     }
 
-    // crash();
+    vm_crash(vm, EXCEPTION_ILLEGAL_STATE, 
+            .description = vm_text_format("Unable to determine CMP condition output, VALUE %d",
+                res),
+            .detailed_description = "Value is nether Greater than, less than or equal 0, Nan?",
+            .dump_vm_struct = true);
 }
 
 void jmp(VM *vm) {
@@ -1014,6 +1019,38 @@ void rsha(VM *vm) {
     vm->registers[reg_a_idx] = result;
 
     vm_verbose(" %d >> %d = %d }\n", reg_a_val, reg_b_val, result);
+
+    vm->program_counter++;
+}
+
+void str(VM *vm) {
+    vm_verbose("STR: {");
+    vm->program_counter++;
+
+    i32 reg_a_idx = vm->program[vm->program_counter];
+    i32 reg_a_val = vm->registers[reg_a_idx];
+
+    vm->program_counter++;
+
+    i32 reg_b_idx = vm->program[vm->program_counter];
+    i32 reg_b_val = vm->registers[reg_b_idx];
+
+
+    i32 *addr = get_vm_ptr(vm, reg_b_val);
+
+    if(vm_ptr_info.ROM_addr) {
+        vm_crash(vm,
+                EXCEPTION_ILLEGAL_WRITE,
+                .description = vm_text_format("Attempted to write '%d' to (ROM)'%d'",
+                    reg_a_val, vm_ptr_info.addr),
+                .detailed_description = "Writting to Read Only Memory is not allowed.",
+                .dump_vm_struct = true);
+    }
+
+    if(vm_ptr_info.RAM_addr) {
+        *addr = reg_a_val;
+        vm_verbose(" @addr=%d(RAM) -> %d }\n", vm_ptr_info.addr, reg_a_val);
+    }
 
     vm->program_counter++;
 }

@@ -314,6 +314,10 @@ int main(int argc, char **argv) {
             rsha(&vm);
         } break;
 
+        case STR: {
+            str(&vm);
+        } break;
+
         case OPCODE_COUNT: 
         default: {
             printf("BAD OPCODE, HALTING\n");
