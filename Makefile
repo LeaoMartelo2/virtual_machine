@@ -7,7 +7,7 @@ VM_VERSION := $(shell expr `cksum src/spec.h | cut -f1 -d' '` % 100000 || 00000)
 GIT_HASH := $(shell git describe --always --dirty 2>/dev/null || echo "Not a git environment")
 BUILD_DATE := $(shell date "+%Y-%m-%d %H:%M:%S" || echo "Unable to get date(?)")
 
-CFLAGS += -DVM_VERSION=$(VM_VERSION) 
+CFLAGS += -DVM_VERSION=$(VM_VERSION)
 CFLAGS += -DGIT_HASH='"$(GIT_HASH)"'
 CFLAGS += -DBUILD_DATE='"$(BUILD_DATE)"'
 

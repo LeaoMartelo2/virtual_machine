@@ -51,6 +51,11 @@ typedef enum {
     EXCEPTION_ILLEGAL_READ,
     EXCEPTION_ILLEGAL_STATE,
     EXCEPTION_UNKNOWN_INSTRUCTION,
+    EXCEPTION_DIVISION_BY_ZERO,
+    EXCEPTION_JMP_OUT_OF_BOUNDS,
+    EXCEPTION_INVALID_SYSCALL,
+
+    EXCEPTION_CRASH_INTENTIONAL,
 
     ERROR_COUNT
 } Error_Type;
@@ -60,6 +65,10 @@ static const char *ErrorStrings[] = {
     [EXCEPTION_ILLEGAL_READ]        = STRINGFY(EXCEPTION_ILLEGAL_READ),
     [EXCEPTION_ILLEGAL_STATE]       = STRINGFY(EXCEPTION_ILLEGAL_STATE),
     [EXCEPTION_UNKNOWN_INSTRUCTION] = STRINGFY(EXCEPTION_UNKNOWN_INSTRUCTION),
+    [EXCEPTION_DIVISION_BY_ZERO]    = STRINGFY(EXCEPTION_DIVISION_BY_ZERO),
+    [EXCEPTION_JMP_OUT_OF_BOUNDS]   = STRINGFY(EXCEPTION_JMP_OUT_OF_BOUNDS),
+    [EXCEPTION_INVALID_SYSCALL]     = STRINGFY(EXCEPTION_INVALID_SYSCALL),
+    [EXCEPTION_CRASH_INTENTIONAL]   = STRINGFY(EXCEPTION_CRASH_INTENTIONAL),
 
 };
 
@@ -67,7 +76,7 @@ static_assert((sizeof(ErrorStrings) / sizeof(ErrorStrings[0])) == ERROR_COUNT,
               "Error: ErrorStrings must contain all elements of the Error_Type table");
 
 typedef struct __crash_details_t {
-    const char *description;
+const char *description;
     const char *detailed_description;
     i32 line_where;
     const char *file_where;
@@ -80,13 +89,13 @@ _Noreturn static inline void vm_crash_opt(const VM *vm, Error_Type type, crash_d
     FILE *file = fopen("crash_log.txt", "w");
     if(!file) {
         fprintf(stderr, "Failed to open crash_log.txt file\n"
-            "This somehow is a even bigger problem D:\n");
+            "There is somehow is a even bigger problem D:\n");
         exit(1);
     }
 
-    fprintf(file, "====== A fatal error has been caugth in the VMASM interpreter ======\n");
+    fprintf(file, "====== A fatal error has been caught in the VMASM interpreter ======\n");
     fprintf(file, "ERROR: %s\n", ErrorStrings[type]);
-    fprintf(file, "Caugth in 0x%08lX", (unsigned long)&vm->program[vm->program_counter]);
+    fprintf(file, "Caught in 0x%08lX", (unsigned long)&vm->program[vm->program_counter]);
     fprintf(file, " -> vm->program[%d]\n", vm->program_counter);
     fprintf(file, "Reported at %s:%d in %s()\n", details.file_where, details.line_where, details.function_where);
 
