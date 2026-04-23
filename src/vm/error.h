@@ -55,6 +55,8 @@ typedef enum {
     EXCEPTION_JMP_OUT_OF_BOUNDS,
     EXCEPTION_INVALID_SYSCALL,
 
+    EXCEPTION_CRASH_INTENTIONAL,
+
     ERROR_COUNT
 } Error_Type;
 
@@ -66,6 +68,7 @@ static const char *ErrorStrings[] = {
     [EXCEPTION_DIVISION_BY_ZERO]    = STRINGFY(EXCEPTION_DIVISION_BY_ZERO),
     [EXCEPTION_JMP_OUT_OF_BOUNDS]   = STRINGFY(EXCEPTION_JMP_OUT_OF_BOUNDS),
     [EXCEPTION_INVALID_SYSCALL]     = STRINGFY(EXCEPTION_INVALID_SYSCALL),
+    [EXCEPTION_CRASH_INTENTIONAL]   = STRINGFY(EXCEPTION_CRASH_INTENTIONAL),
 
 };
 
@@ -73,7 +76,7 @@ static_assert((sizeof(ErrorStrings) / sizeof(ErrorStrings[0])) == ERROR_COUNT,
               "Error: ErrorStrings must contain all elements of the Error_Type table");
 
 typedef struct __crash_details_t {
-    const char *description;
+const char *description;
     const char *detailed_description;
     i32 line_where;
     const char *file_where;

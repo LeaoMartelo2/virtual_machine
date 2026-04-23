@@ -18,6 +18,7 @@ _Noreturn void print_usage(int argc, char **argv) {
     printf("        -v, -verbose       Force verbose mode on.\n");
     printf("        -V, -version       Print version information and exit.\n");
     printf("        -md, -memdump      Dump RAM at program halt. (RAM.DATA)\n");
+    printf("        -crash             Intentionally crash the program at halt.\n");
     printf("        -h, -help          Prints this message\n");
     exit(1);
 
@@ -42,6 +43,7 @@ int main(int argc, char **argv) {
 
     bool forced_verbose = false;
     bool dump_ram = false;
+    bool intentional_crash = false;
     const char *program_file_path;
 
     for (int i = 1; i <argc; ++i) {
@@ -51,6 +53,8 @@ int main(int argc, char **argv) {
         if(strcmp(argv[i], "-md") == 0 || strcmp(argv[i], "-memdump") == 0) { dump_ram = true;}
 
         if(strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0 ) { version_info(); }
+
+        if(strcmp(argv[i], "-crash") == 0) { intentional_crash = true; }
 
         /* first flag that does not start with - is file path*/
         if(argv[i][0] != '-') {program_file_path = argv[i];}
@@ -329,6 +333,13 @@ int main(int argc, char **argv) {
     }
 
     if(dump_ram) dump_ram_memory(&vm);
+
+    if(intentional_crash) {
+        vm_crash(&vm, EXCEPTION_CRASH_INTENTIONAL,
+                .description = "This Crash was caused intentionally due the -crash flag.",
+                .detailed_description = "What where you looking for?",
+                .dump_vm_struct = true);
+    }
 
     return 0;
 }
