@@ -381,7 +381,7 @@ void jle(VM *vm) {
 
     if(jump_to > MAX_PROGRAM_SIZE) {
         vm_crash(vm, EXCEPTION_JMP_OUT_OF_BOUNDS,
-                .description = "Attempted to conditionally jump (JLE) out of program bounds",
+                .description = "Caught attempt to conditionally jump (JLE) out of program bounds",
                 .detailed_description = vm_text_format("Attemped to jump to %d", jump_to));
     }
 
@@ -590,7 +590,7 @@ void syscall_(VM *vm) {
 
     i32 syscall_num = vm->registers[REG_ARG_A];
 
-    switch(syscall_num) {
+    switch((Syscall_numbers)syscall_num) {
 
         case WRITE_SYSCALL: { /* write(fd, buff_addr, count) */
             i32 fd = vm->registers[REG_ARG_B];
@@ -705,6 +705,12 @@ void syscall_(VM *vm) {
             vm_verbose(" read(%d, %d, %d) -> read %d bytes }\n", fd, buff_addr, count, bytes_read_total);
 
         } break;
+
+        default:
+            vm_crash(vm, EXCEPTION_INVALID_SYSCALL,
+                    .description = "Caught a attempt at executing a invalid or unimplemented syscall",
+                    .detailed_description = vm_text_format("Attempted to execute '%d' as syscall number", syscall_num),
+                    .dump_vm_struct = true);
 
     }
 }
@@ -1084,7 +1090,7 @@ void str(VM *vm) {
     if(vm_ptr_info.ROM_addr) {
         vm_crash(vm,
                 EXCEPTION_ILLEGAL_WRITE,
-                .description = vm_text_format("Attempted to write '%d' to (ROM)'%d'",
+                .description = vm_text_format("Caught attempt to write '%d' to (ROM)'%d'",
                     reg_a_val, vm_ptr_info.addr),
                 .detailed_description = "Writting to Read Only Memory is not allowed.",
                 .dump_vm_struct = true);

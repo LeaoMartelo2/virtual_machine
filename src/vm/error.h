@@ -53,6 +53,7 @@ typedef enum {
     EXCEPTION_UNKNOWN_INSTRUCTION,
     EXCEPTION_DIVISION_BY_ZERO,
     EXCEPTION_JMP_OUT_OF_BOUNDS,
+    EXCEPTION_INVALID_SYSCALL,
 
     ERROR_COUNT
 } Error_Type;
@@ -64,6 +65,7 @@ static const char *ErrorStrings[] = {
     [EXCEPTION_UNKNOWN_INSTRUCTION] = STRINGFY(EXCEPTION_UNKNOWN_INSTRUCTION),
     [EXCEPTION_DIVISION_BY_ZERO]    = STRINGFY(EXCEPTION_DIVISION_BY_ZERO),
     [EXCEPTION_JMP_OUT_OF_BOUNDS]   = STRINGFY(EXCEPTION_JMP_OUT_OF_BOUNDS),
+    [EXCEPTION_INVALID_SYSCALL]     = STRINGFY(EXCEPTION_INVALID_SYSCALL),
 
 };
 
@@ -88,9 +90,9 @@ _Noreturn static inline void vm_crash_opt(const VM *vm, Error_Type type, crash_d
         exit(1);
     }
 
-    fprintf(file, "====== A fatal error has been caugth in the VMASM interpreter ======\n");
+    fprintf(file, "====== A fatal error has been caught in the VMASM interpreter ======\n");
     fprintf(file, "ERROR: %s\n", ErrorStrings[type]);
-    fprintf(file, "Caugth in 0x%08lX", (unsigned long)&vm->program[vm->program_counter]);
+    fprintf(file, "Caught in 0x%08lX", (unsigned long)&vm->program[vm->program_counter]);
     fprintf(file, " -> vm->program[%d]\n", vm->program_counter);
     fprintf(file, "Reported at %s:%d in %s()\n", details.file_where, details.line_where, details.function_where);
 
