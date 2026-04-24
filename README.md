@@ -166,6 +166,8 @@ halt
 |LSHA| Left SHift Ammount specified in $reg\_b, stores result in $reg\_a | 2 | lsha $reg\_a, $reg\_b|
 |RSHA|Right SHift Ammount specified in $reg\_b, stores result i $reg\_a  | 2 | rsha $reg\_a, $reg\_b|
 |STR| STore to Ram the value stored in $reg\_a in the position stored by $reg\_b| 2| str $reg\_a, $reg\_b|
+|DLOPEN| Open a Dynamic Linked library (.so) to allow executing its exposed symbols, takes a data pointer and a length | 2 | dlopen @libpath, $length |
+|EXTERN| Execute a extern function exposed by dlopen. Takes a data pointer and a length | 2 | extern @function\_name, $length|
 
 
 - $reg = register index (Ex: $1, $5, $10)

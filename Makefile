@@ -1,7 +1,7 @@
 .PHONY: clear clean
 
 CC := gcc
-CFLAGS := -Wall -Wextra -Wswitch-enum -Wno-override-init -static -std=c11 -ggdb
+CFLAGS := -Wall -Wextra -Wswitch-enum -Wno-override-init -static -ldl -std=c11 -ggdb
 
 VM_VERSION := $(shell expr `cksum src/spec.h | cut -f1 -d' '` % 100000 || 00000)
 GIT_HASH := $(shell git describe --always --dirty 2>/dev/null || echo "Not a git environment")
@@ -14,7 +14,7 @@ CFLAGS += -DBUILD_DATE='"$(BUILD_DATE)"'
 GLOBAL_DEPS = src/spec.h
 INTERPRETER_DEPS = src/vm/error.h
 
-all: vm disasm vmasm
+all: vm disasm vmasm 
 
 
 # VM
@@ -47,6 +47,9 @@ build/assemble/main.o: src/assembler/main.c ${GLOBAL_DEPS}
 	${CC} -c src/assembler/main.c -o build/assemble/main.o ${CFLAGS}
 
 # MISC
+
+externlib: 
+	make -C example_programs/externlib
 
 clean: clear
 

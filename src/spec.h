@@ -10,6 +10,8 @@
 #define MAX_PROGRAM_SIZE 32767
 #define MAX_STACK_SIZE 256
 
+#define MAX_EXTERNAL_LIBS 5
+
 #define VM_MAGIC 0x525F4D56 /* VM_R */
 
 #ifndef VM_VERSION
@@ -60,6 +62,7 @@ typedef enum : i32 {
 
     REG_RAM_START,
     REG_HEAP_PTR,
+    REG_NULL,
 
     REG_COUNT
 
@@ -120,11 +123,13 @@ typedef enum : i32 {
     LSHA,
     RSHA,
     STR,
+    DLOPEN,
+    EXTERN,
 
     OPCODE_COUNT
 } Opcodes;
 
-#define MAX_ARGUMENT_COUNT 3
+#define MAX_ARGUMENT_COUNT 4
 
 typedef enum {
     ARG_NONE = 0,
@@ -194,6 +199,8 @@ static const Instruction_spec ASSEMBLY_TABLE[] =  {
     [LSHA]           =  { "lsha", 2,           { ARG_REG, ARG_REG}},
     [RSHA]           =  { "rsha", 2,           { ARG_REG, ARG_REG}},
     [STR]            =  { "str", 2,            { ARG_REG, ARG_REG}},
+    [DLOPEN]         =  { "dlopen", 2,         { ARG_VAL, ARG_REG}},
+    [EXTERN]         =  { "extern", 2,         { ARG_VAL, ARG_REG}},
 };
 
 // :Tabularize /[={]
@@ -219,6 +226,7 @@ static const Named_register NAMED_REGISTERS[] = {
      { "ram_start", REG_RAM_START},
      { "heap", REG_HEAP_PTR},
      { "ram", REG_HEAP_PTR},
+     { "reg_null", REG_NULL},
 };
 
 #define NAMED_REGISTER_COUNT (sizeof(NAMED_REGISTERS) / sizeof(Named_register))
@@ -284,6 +292,12 @@ typedef struct {
 } VMFileHeader;
 
 typedef struct {
+    void *handle;
+} VMExternHandle;
+
+typedef i32 (*extern_signature)(i32, i32, i32, i32);
+
+typedef struct {
     i32 program_counter;
     i32 program[MAX_PROGRAM_SIZE];
     i32 program_size;
@@ -301,6 +315,9 @@ typedef struct {
 
     i32 return_address_stack[MAX_STACK_SIZE];
     i32 return_address_head;
+
+    VMExternHandle extern_handle[MAX_EXTERNAL_LIBS];
+    i32 extern_handle_count;
 
     bool halted;
     bool verbose;

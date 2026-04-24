@@ -13,6 +13,7 @@
 #include <linux/limits.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 
 void vm_verbose_(VM *vm, const char *format, ...) {
 
@@ -1100,6 +1101,119 @@ void str(VM *vm) {
         *addr = reg_a_val;
         vm_verbose(" @addr=%d(RAM) -> %d }\n", vm_ptr_info.addr, reg_a_val);
     }
+
+    vm->program_counter++;
+}
+
+void dlopen_(VM *vm) {
+    vm_verbose("DLOPEN {");
+    vm->program_counter++;
+
+    i32 buff_addr = vm->program[vm->program_counter];
+
+    vm->program_counter++;
+
+    i32 reg_szof_addr = vm->program[vm->program_counter];
+
+    i32 length = vm->registers[reg_szof_addr];
+
+    char *string = malloc(length + 1);
+
+    for(int i = 0; i < length; ++i) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
+
+        if(ptr) {
+            char c = (char)(*ptr & 0xFF);
+            string[i] = c;
+
+            if(c == '\0') break;
+        } else {
+            string[i] = '\0';
+            break;
+        }
+    }
+
+    string[length] = '\0';
+
+
+    vm_verbose(" --> '%s' }\n", string);
+
+
+
+    vm->extern_handle[vm->extern_handle_count].handle = dlopen(string, RTLD_LAZY | RTLD_GLOBAL);
+
+    if(!vm->extern_handle[vm->extern_handle_count].handle) {
+        vm_crash(vm, EXCEPTION_DLOPEN_FAIL,
+                .description = vm_text_format("Failed oppening '%s'", string),
+                .detailed_description = vm_text_format("dlerror(): %s", dlerror()));
+    }
+    
+
+    vm->extern_handle_count++;
+
+    free(string);
+    string = NULL;
+
+    vm->program_counter++;
+}
+
+
+void extern_(VM *vm) {
+    vm_verbose("EXTERN: {");
+    vm->program_counter++;
+
+    i32 buff_addr = vm->program[vm->program_counter];
+
+    vm->program_counter++;
+
+    i32 reg_szof_addr = vm->program[vm->program_counter];
+
+    i32 length = vm->registers[reg_szof_addr];
+
+    char *string = malloc(length + 1);
+
+    for(int i = 0; i < length; ++i) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
+
+        if(ptr) {
+            char c = (char)(*ptr & 0xFF);
+            string[i] = c;
+
+            if(c == '\0') break;
+        } else {
+            string[i] = '\0';
+            break;
+        }
+    }
+
+    string[length] = '\0';
+
+
+    i32 arg_a = vm->registers[REG_ARG_A];
+    i32 arg_b = vm->registers[REG_ARG_B];
+    i32 arg_c = vm->registers[REG_ARG_C];
+    i32 arg_d = vm->registers[REG_ARG_D];
+
+    void *symbol = dlsym(RTLD_DEFAULT, string);
+
+    if(symbol == NULL) {
+        vm_crash(vm, EXCEPTION_EXTSYM_RESOLUTION_FAIL,
+                .description = vm_text_format("While trying to resolve external symbol '%s'",
+                    string),
+                .detailed_description = vm_text_format("Is the respective library open?"));
+    }
+    
+    extern_signature f = (extern_signature)symbol;
+
+    i32 result = f(arg_a, arg_b, arg_c, arg_d);
+
+    vm_verbose(" $ret = %s(%d, %d, %d, %d); -> %d }\n", string, arg_a, arg_b, arg_c, arg_d, result);
+
+    vm->registers[REG_RET] = result;
+
+
+    free(string);
+    string = NULL;
 
     vm->program_counter++;
 }
