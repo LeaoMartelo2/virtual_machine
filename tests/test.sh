@@ -45,7 +45,8 @@ echo "Starting VMASM Test Suite"
 echo "========================================"
 
 test_file "./errors/EXCEPTION_ILLEGAL_WRITE_str.asm" "EXCEPTION_ILLEGAL_WRITE,in str()"
-test_file "another_test.asm" "hhhhhhhhhh"
+test_file "./errors/EXCEPTION_ILLEGAL_WRITE_mov.asm" "EXCEPTION_ILLEGAL_WRITE,in mov()"
+test_file "./errors/EXCEPTION_ILLEGAL_WRITE_ld.asm"  "EXCEPTION_ILLEGAL_WRITE,in ld()"
 
 echo "========================================"
 echo "Test Summary:"
