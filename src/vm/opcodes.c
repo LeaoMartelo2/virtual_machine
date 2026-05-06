@@ -135,6 +135,21 @@ static void vm_internal_setstring_all_libraries(VM *vm, const char *arg) {
 
 }
 
+static void vm_set_register(VM *vm, i32 ind, i32 value) {
+
+    if(is_readonly_register(ind)) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                .description = "Caugth read only register write on external library",
+                .detailed_description = "Writing to read only registers is not allowed");
+    }
+
+    vm->registers[ind] = value;
+}
+
+static i32 vm_get_register(VM *vm, i32 ind) {
+    return vm->registers[ind];
+}
+
 void no_op(VM *vm) {
     vm_verbose("NO_OP\n");
     vm->program_counter++;
@@ -1294,6 +1309,18 @@ void dlopen_(VM *vm) {
     
 
     vm->extern_handle_count++;
+
+
+    i32 (*set_internal)(__vmasm_internal) = dlsym(RTLD_DEFAULT, "__vmasm_internal_set_internal");
+
+    set_internal((__vmasm_internal){.vm = vm,
+            .set_register = vm_set_register,
+            .get_register = vm_get_register});
+
+       
+
+
+
 
     free(string);
     vm->program_counter++;

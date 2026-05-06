@@ -312,21 +312,8 @@ typedef struct {
     void *handle;
 } VMExternHandle;
 
-typedef struct {
-    i32 arg_a;
-    i32 arg_b;
-    i32 arg_c;
-    i32 arg_d;
-    i32 arg_e;
-    i32 arg_f;
-    i32 arg_g;
-    i32 arg_h;
-} VMASMObject;
- 
-#define VMASMObject_Fmt "%d, %d, %d, %d, %d, %d, %d, %d"
-#define VMASMObject_Arg(obj) (obj).arg_a, (obj).arg_b, (obj).arg_c, (obj).arg_d, (obj).arg_e, (obj).arg_f, (obj).arg_g, (obj).arg_h
-
-typedef i32 (*extern_signature)(VMASMObject);
+struct VMASMObject;
+typedef i32 (*extern_signature)(struct VMASMObject);
 
 typedef struct {
     i32 program_counter;
@@ -353,5 +340,10 @@ typedef struct {
     bool halted;
     bool verbose;
 } VM;
+
+#define VMASM_INTERNAL
+#include "../VMASM.h"
+#undef VMASM_INTERNAL
+
 
 #endif /* SPEC_H */
