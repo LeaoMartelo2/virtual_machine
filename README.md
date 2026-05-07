@@ -125,6 +125,7 @@ Here is a example on a VMASM 'plugin' integration:
 WORD exposed_function(VMASMObject obj) {
 
     printf(VMASMObject_Fmt"\n", VMASMObject_Arg(obj));
+    /* Fmt macro to print all argument registers, you can also use obj.arg_a .. obj.arg_h */
 
     printf("String: '%s'\n", vmasm_get_globalstring());
 
