@@ -796,6 +796,8 @@ void syscall_(VM *vm) {
 
 	    vm_verbose(" open(\"%s\", %d, %d) -> fd: %d }\n", path, flags, mode, fd);
 
+            free(path);
+
         } break;
 
         case CLOSE_SYSCAL: {
