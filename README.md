@@ -111,6 +111,73 @@ halt
     msg: "Hello, World!"
 ```
 
+You can also call external library functions, by making a "wrapper plugin' library to comply with the VMASM API
+
+Here is a example on a VMASM 'plugin' integration:
+
+```c
+/* libexample.c */
+#include "VMASM.h"
+#include <stdio.h>
+
+/* can either use WORD or i32 */
+
+WORD exposed_function(VMASMObject obj) {
+
+    printf(VMASMObject_Fmt"\n", VMASMObject_Arg(obj));
+
+    printf("String: '%s'\n", vmasm_get_globalstring());
+
+    vmasm_set_register(5, 200);
+
+    printf("Register 5 is = %d\n", vmasm_get_register(5));
+
+    return 0;
+    /* must explicitly return a value, letting memory garbage in return could be very bad */
+}
+```
+
+compile with `gcc libexample.c -o libexample.so -shared -fPIC`
+
+And then assemble and run this:
+```asm
+strlen @path, $10
+dlopen @path, $10
+
+mov 10, $arg_a
+mov 20, $arg_b
+mov 30, $arg_d
+mov 40, $arg_e
+
+strlen @text, $10
+extern_str @text, $10
+
+strlen @func, $10
+extern @func, $10
+
+halt
+
+.data 
+    path: "./libexample.so"
+    func: "exposed_function"
+    text: "This is my very cool string"
+```
+
+The output should look like:
+
+<details closed>
+<summary>CLICK TO EXPAND</summary>
+
+```raw
+==== VM INIT ====
+10, 20, 0, 30, 40, 0, 0, 0
+String: 'This is my very cool string'
+Register 5 is = 200
+HALT:
+==== MACHINE HALTED ====
+```
+
+</details>
 
 ## Documentation
 
