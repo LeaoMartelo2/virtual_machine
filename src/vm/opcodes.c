@@ -607,6 +607,12 @@ void mod(VM *vm) {
     i32 reg_b_ind = vm->program[vm->program_counter];
     i32 reg_b = vm->registers[reg_b_ind];
 
+    if(reg_b ==(i32)0) {
+        vm_crash(vm, EXCEPTION_DIVISION_BY_ZERO,
+                .description = "Caugth attempted modulo division by 0",
+                .detailed_description = vm_text_format("Attempted operation '%d %% %d'", reg_a, reg_b));
+    }
+
     vm_verbose(" reg[%d] %% reg[%d] | ", reg_a_ind, reg_b_ind);
 
     i32 result = reg_a % reg_b;
