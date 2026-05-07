@@ -40,6 +40,7 @@ typedef enum : i32 {
     REG_7,
     REG_8,
     REG_9,
+    REG_10,
     REG_11,
     REG_12,
     REG_13,
