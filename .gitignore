@@ -6,7 +6,7 @@ file.txt
 VM.dump
 crash_log.txt
 *.obj
-*.bin
+out.bin
 
 !*/
 
