@@ -109,7 +109,7 @@ bool run_test(TestCase t) {
 
     snprintf(cmd_with_redir, sizeof(cmd_with_redir), SV_Fmt " 2>&1", SV_Arg(t.command));
 
-    int target_width = 40;
+    int target_width = 60;
     int name_len = (int)t.name.count;
     int padding = target_width - name_len;
     if(padding < 0) padding = 0;

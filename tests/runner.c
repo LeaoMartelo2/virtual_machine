@@ -34,6 +34,24 @@ int main(void) {
             .command = sv("../vm exceptions/jmp_out_of_bounds.bin"),
             .expected = sv("caught a EXCEPTION_JMP_OUT_OF_BOUNDS"));
 
+    add_test(&exceptions,
+            .name = sv("Exception invalid syscall"),
+            .command = sv("../vmasm exceptions/invalid_syscall.asm -run"),
+            .expected = sv("caught a EXCEPTION_INVALID_SYSCALL"));
+
+    add_test(&exceptions,
+            .name = sv("Exception dlopen fail"),
+            .command = sv("../vmasm exceptions/dlopen_fail.asm -run"),
+            .expected = sv("caught a EXCEPTION_DLOPEN_FAIL"));
+
+    add_test(&exceptions,
+            .name = sv("Exception external symbol resolution fail"),
+            .command = sv("../vmasm exceptions/extsym_resolution_fail.asm -run"),
+            .expected = sv("caught a EXCEPTION_EXTSYM_RESOLUTION_FAIL"));
+
+
+
+
     run_entire_suite(exceptions, .save_failed = &failed);
 
 
