@@ -49,6 +49,12 @@ int main(void) {
             .command = sv("../vmasm exceptions/extsym_resolution_fail.asm -run"),
             .expected = sv("caught a EXCEPTION_EXTSYM_RESOLUTION_FAIL"));
 
+    add_test(&exceptions,
+            .name = sv("Exception too many extern symbols"),
+            .command = sv("../vmasm exceptions/too_many_extern_symbols.asm -run"),
+            .expected = sv("caught a EXCEPTION_TOO_MANY_EXTERN_SYMBOLS"));
+
+
 
 
 
