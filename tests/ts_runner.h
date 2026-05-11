@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 /* Dynamic array implementation taken from:
@@ -53,6 +56,20 @@ String_View sv(const char *cstr);
 
 bool sv_contains(String_View haystack, String_View needle);
 
+typedef struct {
+    char *data;
+    size_t count;
+    size_t capacity;
+} String_Builder;
+
+void sb_ensure_size(String_Builder *sb, size_t additional_bytes);
+
+void sb_appendf(String_Builder *sb, const char *fmt, ...);
+
+void sb_free(String_Builder *sb);
+
+String_View sb_to_sv(String_Builder sb); 
+
 #define CLR_GREEN "\x1b[32m"
 #define CLR_RED "\x1b[31m"
 #define CLR_RESET "\x1b[0m"
@@ -100,6 +117,50 @@ bool sv_contains(String_View haystack, String_View needle) {
         }
     }
     return false;
+}
+
+void sb_ensure_size(String_Builder *sb, size_t additional_bytes) {
+    size_t needed = sb->count + additional_bytes;
+    if (needed > sb->capacity) {
+        if(sb->capacity == 0) {
+            sb->capacity = 256;
+        }
+        while(sb->capacity < needed) {
+            sb->capacity *= 2;
+        }
+        sb->data = realloc(sb->data, sb->capacity);
+    }
+}
+
+void sb_appendf(String_Builder *sb, const char *fmt, ...) {
+    
+    va_list args;
+
+    va_start(args, fmt);
+    int needed = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+
+    if (needed <= 0) return;
+
+    sb_ensure_size(sb, (size_t)needed);
+
+    va_start(args, fmt);
+
+    vsnprintf(sb->data + sb->count, (size_t)needed + 1, fmt, args);
+    va_end(args);
+
+    sb->count += (size_t)needed;
+}
+
+void sb_free(String_Builder *sb) {
+    free(sb->data);
+    sb->data = NULL;
+    sb->count = 0;
+    sb->capacity = 0;
+}
+
+String_View sb_to_sv(String_Builder sb) {
+    return(String_View){.data = sb.data, .count = sb.count};
 }
 
 bool run_test(TestCase t) {
@@ -164,9 +225,4 @@ void run_entire_suite_opt(TestCase *suite, TestCase **save_failed) {
 
 }
 
-
-
-
 #endif /* TS_RUNNER_IMPLEMENTATION */
-
-
