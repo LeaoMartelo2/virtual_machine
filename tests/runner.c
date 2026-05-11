@@ -77,9 +77,23 @@ int main(void) {
             .command = vmasm("exceptions/open_syscall_fail.asm"),
             .expected = sv("EXCEPTION_OPEN_SYSCALL_FAIL"));
 
+    add_test(&exceptions,
+            .name = sv("Exception stack overflow "),
+            .command = vmasm("exceptions/stack_overflow.asm"),
+            .expected = sv("EXCEPTION_STACK_OVERFLOW"));
+
+    add_test(&exceptions,
+            .name = sv("Exception stack underflow"),
+            .command = vmasm("exceptions/stack_underflow.asm"),
+            .expected = sv("EXCEPTION_STACK_UNDERFLOW"));
+
+    add_test(&exceptions,
+            .name = sv("Exception crash intentional"),
+            .command = sv("../vmasm exceptions/crash_intentional.asm -run -crash"),
+            .expected = sv("EXCEPTION_CRASH_INTENTIONAL"));
 
     run_entire_suite(exceptions, .save_failed = &failed);
 
-
     return 0;
+
 }
