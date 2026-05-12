@@ -94,6 +94,26 @@ int main(void) {
 
     run_entire_suite(exceptions, .save_failed = &failed);
 
+/* @exceptions */
+
+    printf("===== Testing OPCODES =====\n");
+
+    TestCase *opcodes = NULL;
+
+    add_test(&opcodes,
+            .name = sv("MOV opcode"),
+            .command = vmasm("opcodes/mov.asm"),
+            .expected = "MOV: { 0 -> register[0] }");
+
+    add_test(&opcodes,
+            .name = sv("LD opcode"),
+            .command = vmasm("opcodes/ld.asm"),
+            .expected = "LD: { register[5] = 5 -> register[10] }");
+
+
+
+    run_entire_suite(opcodes, .save_failed = &failed);
+
     return 0;
 
 }

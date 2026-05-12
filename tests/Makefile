@@ -11,4 +11,4 @@ all:
 tests: all
 	./runner
 clear:
-	rm -f out.bin VM.dump runner libtest.so crash_log.txt binpatch
+	rm -f out.bin VM.dump runner libtest.so crash_log.txt binpatch exceptions/unknown_instruction.bin
