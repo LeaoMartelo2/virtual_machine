@@ -698,7 +698,7 @@ void call(VM *vm) {
     vm->program_counter++;
 
     if(vm->return_address_head >= MAX_STACK_SIZE) {
-        vm_crash(vm, EXCEPTION_STACK_UNDERFLOW,
+        vm_crash(vm, EXCEPTION_STACK_OVERFLOW,
                 .description = "Return address stack limit reached",
                 .detailed_description = "Too many nested function calls (recurson depth limit)");
     }

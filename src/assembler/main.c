@@ -241,9 +241,14 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
 
         if (strcmp(argv[i], "-o") == 0) {
-            if (i + 1 < argc) output_path = argv[++i];
+            if (i + 1 < argc) {
+		output_path = argv[i + 1];
+		i++;
+	    }
             else { fprintf(stderr, "Error: -o needs a path.\n"); exit(1); }
+            continue;
         }
+
 
         if (strcmp(argv[i], "-run") == 0) {
             run_flag = true;
@@ -254,6 +259,7 @@ int main(int argc, char **argv) {
                 interpreter_argc = argc - (i - 1) - 2;
                 break;
             }
+            continue;
 
         } 
 
@@ -267,7 +273,10 @@ int main(int argc, char **argv) {
     if (!input_path) { fprintf(stderr, "Error: no input file.\n"); exit(1); }
 
     FILE *file = fopen(input_path, "r");
-    if (!file) { perror("Failed to open input file"); exit(1); }
+    if (!file) { 
+        printf("%s\n", input_path);
+        printf("%s\n", output_path);
+        perror("Failed to open input file"); exit(1); }
 
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
