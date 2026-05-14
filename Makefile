@@ -51,7 +51,12 @@ build/assemble/main.o: src/assembler/main.c ${GLOBAL_DEPS}
 externlib: 
 	make -C example_programs/externlib
 
+tests: all
+	make -C tests/ tests
+
 clean: clear
 
 clear:
 	rm -f *.obj *.bin disassembled.asm file.txt index.html RAM.DATA VM.dump crash_log.txt vm vmasm disasm build/vm/*.o build/disassemble/*.o build/assemble/*.o
+	make -C tests clear
+	make -C example_programs/externlib/ clear
