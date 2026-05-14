@@ -145,6 +145,25 @@ int main(void) {
             .command = vmasm("opcodes/add.asm"),
             .expected = sv("ADD: { reg[0] + reg[1] |  2 + 2 = 4 }"));
 
+    add_test(&opcodes,
+            .name = sv("SUB opcode"),
+            .command = vmasm("opcodes/sub.asm"),
+            .expected = sv("SUB: { reg[1] - reg[2] |  1 - 2 = -1 }"));
+
+    add_test(&opcodes,
+            .name = sv("MUL opcode"),
+            .command = vmasm("opcodes/mul.asm"),
+            .expected = sv("MUL: { reg[10] * reg[20] |  10 * 10 = 100 }"));
+
+    add_test(&opcodes,
+            .name = sv("DIV opcode"),
+            .command = vmasm("opcodes/div.asm"),
+            .expected = sv("DIV: { reg[10] / reg[20] |  100 / 10 = 10 }"));
+
+
+
+
+
 
 
     run_entire_suite(opcodes, .save_failed = &failed);
