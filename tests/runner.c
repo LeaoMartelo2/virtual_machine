@@ -103,17 +103,51 @@ int main(void) {
     add_test(&opcodes,
             .name = sv("MOV opcode"),
             .command = vmasm("opcodes/mov.asm"),
-            .expected = "MOV: { 0 -> register[0] }");
+            .expected = sv("MOV: { 0 -> register[0] }"));
 
     add_test(&opcodes,
             .name = sv("LD opcode"),
             .command = vmasm("opcodes/ld.asm"),
-            .expected = "LD: { register[5] = 5 -> register[10] }");
+            .expected = sv("LD: { register[5] = 5 -> register[10] }"));
+
+    add_test(&opcodes,
+            .name = sv("INC opcode"),
+            .command = vmasm("opcodes/inc.asm"),
+            .expected = sv("INC: { register[0] = 0 -> 1 }"));
+
+    add_test(&opcodes,
+            .name = sv("DEC opcode"),
+            .command = vmasm("opcodes/dec.asm"),
+            .expected = sv("DEC: { register[1] = 1 -> 0 }"));
+
+    add_test(&opcodes,
+            .name = sv("JE opcode"),
+            .command = vmasm("opcodes/je.asm"),
+            .expected = sv("1"));
+
+    add_test(&opcodes,
+            .name = sv("JNE opcode"),
+            .command = vmasm("opcodes/jne.asm"),
+            .expected = sv("1"));
+
+    add_test(&opcodes,
+            .name = sv("JGE opcode"),
+            .command = vmasm("opcodes/jge.asm"),
+            .expected = sv("1"));
+
+    add_test(&opcodes,
+            .name = sv("JLE opcode"),
+            .command = vmasm("opcodes/jle.asm"),
+            .expected = sv("1"));
+
+    add_test(&opcodes,
+            .name = sv("ADD opcode"),
+            .command = vmasm("opcodes/add.asm"),
+            .expected = sv("ADD: { reg[0] + reg[1] |  2 + 2 = 4 }"));
 
 
 
     run_entire_suite(opcodes, .save_failed = &failed);
 
     return 0;
-
 }
