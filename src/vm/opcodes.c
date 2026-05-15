@@ -806,7 +806,7 @@ void syscall_(VM *vm) {
 
         } break;
 
-        case CLOSE_SYSCAL: {
+        case CLOSE_SYSCALL: {
             i32 fd = vm->registers[REG_ARG_B];
             
             close(fd);
