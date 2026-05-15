@@ -256,7 +256,7 @@ typedef enum : i32 {
     GETPID_SYSCALL = 2,
     KILL_SYSCALL = 3,
     OPEN_SYSCALL = 4,
-    CLOSE_SYSCAL = 5,
+    CLOSE_SYSCALL = 5,
     READ_SYSCALL = 6,
 } Syscall_numbers;
 
@@ -286,7 +286,7 @@ static const Constant_spec PREDEFINED_CONSTANTS[] = {
     {"getpid_syscall", GETPID_SYSCALL},
     {"kill_syscall", KILL_SYSCALL},
     {"open_syscall", OPEN_SYSCALL},
-    {"close_syscall", CLOSE_SYSCAL},
+    {"close_syscall", CLOSE_SYSCALL},
     {"read_syscall", READ_SYSCALL},
 
 
