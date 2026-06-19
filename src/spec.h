@@ -26,6 +26,16 @@
     #define GIT_HASH "Unknown"
 #endif
 
+#if defined(__GNUC__)
+    #define COMPILER_NAME "GCC [" __VERSION__ "]"
+#elif defined(__clang__)
+    #define COMPILER_NAME "Clang [" __clang_version__ "]"
+#else
+    #define COMPILER_NAME "Unknown Compiler"
+#endif
+
+
+
 
 typedef int32_t i32;
 

@@ -88,6 +88,7 @@ _Noreturn void version_info(void){
     printf("Expected Magic Bytes:   %#x\n", VM_MAGIC);
     printf("Build:                  %s  \n", GIT_HASH);
     printf("Build date:             %s   \n", BUILD_DATE);
+    printf("Compiled with %s\n", COMPILER_NAME);
     exit(0);
 }
 

@@ -214,6 +214,7 @@ _Noreturn void version_info(void){
     printf("Build:                          %s  \n", GIT_HASH);
     printf("Build date:                     %s   \n", BUILD_DATE);
     printf("Interpreter '-run' flag name:   %s    \n", RUNNER_NAME);
+    printf("Compiled with %s\n", COMPILER_NAME);
     exit(0);
 }
 
